@@ -451,23 +451,7 @@ update_places (NautilusPlacesSidebar *sidebar)
 	network_mounts = network_volumes = NULL;
 	volume_monitor = sidebar->volume_monitor;
 
-	/* add built in bookmarks */
-	add_separator (sidebar, SECTION_COMPUTER);
-
-	if (g_settings_get_boolean (gnome_background_preferences, NAUTILUS_PREFERENCES_SHOW_DESKTOP)) {
-		/* desktop */
-		mount_uri = nautilus_get_desktop_directory_uri ();
-		icon = g_themed_icon_new (NAUTILUS_ICON_FOLDER);
-		add_place (sidebar, PLACES_BUILT_IN,
-			   SECTION_COMPUTER,
-			   _("Desktop"), icon, mount_uri,
-			   NULL, NULL, NULL, 0,
-			   _("Open the contents of your desktop in a folder"));
-		g_object_unref (icon);
-		g_free (mount_uri);
-	}
-
-	/* XDG directories */
+	/* add built in bookmarks (XDG directories) */
 	add_special_dirs (sidebar);
 
 	mount_uri = "trash:///"; /* No need to strdup */
@@ -3239,10 +3223,6 @@ nautilus_places_sidebar_init (NautilusPlacesSidebar *sidebar)
 
 	gtk_tree_view_set_activate_on_single_click (sidebar->tree_view, TRUE);
 
-	g_signal_connect_swapped (gnome_background_preferences, "changed::" NAUTILUS_PREFERENCES_SHOW_DESKTOP,
-				  G_CALLBACK (update_places),
-				  sidebar);
-
 	sidebar->hostname = g_strdup (_("Computer"));
 	sidebar->hostnamed_cancellable = g_cancellable_new ();
 	g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
@@ -3292,10 +3272,6 @@ nautilus_places_sidebar_dispose (GObject *object)
 
 	g_signal_handlers_disconnect_by_func (nautilus_preferences,
 					      bookmarks_popup_menu_detach_cb,
-					      sidebar);
-
-	g_signal_handlers_disconnect_by_func (gnome_background_preferences,
-					      update_places,
 					      sidebar);
 
 	if (sidebar->volume_monitor != NULL) {
