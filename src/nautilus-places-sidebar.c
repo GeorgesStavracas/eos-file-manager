@@ -359,33 +359,6 @@ sidebar_update_restore_selection (NautilusPlacesSidebar *sidebar,
 	}
 }
 
-static gboolean
-recent_is_supported (void)
-{
-	const char * const *supported;
-	gboolean enabled;
-	int i;
-
-	enabled = g_settings_get_boolean (gnome_privacy_preferences,
-					  NAUTILUS_PREFERENCES_RECENT_FILES_ENABLED);
-
-	if (!enabled) {
-		return FALSE;
-	}
-
-	supported = g_vfs_get_supported_uri_schemes (g_vfs_get_default ());
-	if (!supported) {
-		return FALSE;
-	}
-
-	for (i = 0; supported[i] != NULL; i++) {
-		if (strcmp ("recent", supported[i]) == 0) {
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
 static void
 add_special_dirs (NautilusPlacesSidebar *sidebar)
 {
@@ -508,17 +481,6 @@ update_places (NautilusPlacesSidebar *sidebar)
 
 	add_heading (sidebar, SECTION_COMPUTER,
 		     _("Places"));
-
-	if (recent_is_supported ()) {
-		mount_uri = "recent:///"; /* No need to strdup */
-		icon = g_themed_icon_new ("document-open-recent-symbolic");
-		add_place (sidebar, PLACES_BUILT_IN,
-			   SECTION_COMPUTER,
-			   _("Recent"), icon, mount_uri,
-			   NULL, NULL, NULL, 0,
-			   _("Recent files"));
-		g_object_unref (icon);
-	}
 
 	/* home folder */
 	mount_uri = nautilus_get_home_directory_uri ();
@@ -3468,9 +3430,6 @@ nautilus_places_sidebar_init (NautilusPlacesSidebar *sidebar)
 	g_signal_connect_swapped (gnome_background_preferences, "changed::" NAUTILUS_PREFERENCES_SHOW_DESKTOP,
 				  G_CALLBACK (update_places),
 				  sidebar);
-	g_signal_connect_swapped (gnome_privacy_preferences, "changed::" NAUTILUS_PREFERENCES_RECENT_FILES_ENABLED,
-				  G_CALLBACK (update_places),
-				  sidebar);
 
 	sidebar->hostname = g_strdup (_("Computer"));
 	sidebar->hostnamed_cancellable = g_cancellable_new ();
@@ -3524,10 +3483,6 @@ nautilus_places_sidebar_dispose (GObject *object)
 					      sidebar);
 
 	g_signal_handlers_disconnect_by_func (gnome_background_preferences,
-					      update_places,
-					      sidebar);
-
-	g_signal_handlers_disconnect_by_func (gnome_privacy_preferences,
 					      update_places,
 					      sidebar);
 
