@@ -629,17 +629,6 @@ update_places (NautilusPlacesSidebar *sidebar)
 	}
 	g_list_free (volumes);
 
-	/* file system root */
-
- 	mount_uri = "file:///"; /* No need to strdup */
-	icon = g_themed_icon_new (NAUTILUS_ICON_FILESYSTEM);
-	add_place (sidebar, PLACES_BUILT_IN,
-		   SECTION_DEVICES,
-		   sidebar->hostname, icon, mount_uri,
-		   NULL, NULL, NULL, 0,
-		   _("Open the contents of the File System"));
-	g_object_unref (icon);
-
 	/* add mounts that has no volume (/etc/mtab mounts, ftp, sftp,...) */
 	mounts = g_volume_monitor_get_mounts (volume_monitor);
 
