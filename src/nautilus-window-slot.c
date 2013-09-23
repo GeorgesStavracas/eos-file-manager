@@ -397,7 +397,7 @@ nautilus_window_slot_set_search_visible (NautilusWindowSlot *slot,
 
 			/* Use the home directory as a fallback */
 			if (return_location == NULL) {
-				return_location = g_file_new_for_path (g_get_home_dir ());
+				return_location = nautilus_get_initial_location ();
 			}
 		}
 
@@ -1039,7 +1039,7 @@ viewed_file_changed_callback (NautilusFile *file,
 				/* auto-show existing parent */
 				go_to_file = nautilus_find_existing_uri_in_hierarchy (parent);
 			} else {
-				go_to_file = g_file_new_for_path (g_get_home_dir ());
+				go_to_file = nautilus_get_initial_location ();
 			}
 
 			nautilus_window_slot_open_location (slot, go_to_file, 0);
@@ -2788,13 +2788,13 @@ void
 nautilus_window_slot_go_home (NautilusWindowSlot *slot,
 			      NautilusWindowOpenFlags flags)
 {			      
-	GFile *home;
+	GFile *initial_location;
 
 	g_return_if_fail (NAUTILUS_IS_WINDOW_SLOT (slot));
 
-	home = g_file_new_for_path (g_get_home_dir ());
-	nautilus_window_slot_open_location (slot, home, flags);
-	g_object_unref (home);
+	initial_location = nautilus_get_initial_location ();
+	nautilus_window_slot_open_location (slot, initial_location, flags);
+	g_object_unref (initial_location);
 }
 
 void

@@ -714,6 +714,30 @@ nautilus_get_desktop_directory_uri (void)
 	return desktop_uri;
 }
 
+static const GUserDirectory default_dirs[] = {
+	G_USER_DIRECTORY_DOCUMENTS,
+	G_USER_DIRECTORY_PICTURES,
+	G_USER_DIRECTORY_VIDEOS,
+	G_USER_DIRECTORY_MUSIC,
+	G_USER_DIRECTORY_DOWNLOAD
+};
+
+GFile *
+nautilus_get_initial_location (void)
+{
+	const gchar *path;
+	GUserDirectory user_dir;
+
+	for (user_dir = 0; user_dir < G_N_ELEMENTS (default_dirs); user_dir++) {
+		path = g_get_user_special_dir (default_dirs[user_dir]);
+		if (path != NULL) {
+			return g_file_new_for_path (path);
+		}
+	}
+
+	return g_file_new_for_path (g_get_home_dir ());
+}
+
 char *
 nautilus_get_home_directory_uri (void)
 {
