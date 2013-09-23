@@ -205,6 +205,8 @@ eos_file_manager_SOURCES = \
 	nautilus-window.h			\
 	nautilus-x-content-bar.c		\
 	nautilus-x-content-bar.h		\
+	empathy-cell-renderer-expander.c	\
+	empathy-cell-renderer-expander.h	\
 	$(NULL)
 
 nodist_eos_file_manager_SOURCES = \
