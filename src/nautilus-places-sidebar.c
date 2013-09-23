@@ -65,7 +65,7 @@ typedef struct {
 	GtkTreeView        *tree_view;
 	GtkCellRenderer    *eject_icon_cell_renderer;
 	char 	           *uri;
-	GtkListStore       *store;
+	GtkTreeStore       *store;
 	NautilusWindow *window;
 	NautilusBookmarkList *bookmarks;
 	GVolumeMonitor *volume_monitor;
@@ -192,21 +192,21 @@ static const GtkTargetEntry nautilus_shortcuts_drop_targets [] = {
 
 /* Drag and drop interface declarations */
 typedef struct {
-	GtkListStore parent;
+	GtkTreeStore parent;
 
 	NautilusPlacesSidebar *sidebar;
 } NautilusShortcutsModel;
 
 typedef struct {
-	GtkListStoreClass parent_class;
+	GtkTreeStoreClass parent_class;
 } NautilusShortcutsModelClass;
 
 GType _nautilus_shortcuts_model_get_type (void);
 static void _nautilus_shortcuts_model_drag_source_init (GtkTreeDragSourceIface *iface);
-G_DEFINE_TYPE_WITH_CODE (NautilusShortcutsModel, _nautilus_shortcuts_model, GTK_TYPE_LIST_STORE,
+G_DEFINE_TYPE_WITH_CODE (NautilusShortcutsModel, _nautilus_shortcuts_model, GTK_TYPE_TREE_STORE,
 			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_DRAG_SOURCE,
 						_nautilus_shortcuts_model_drag_source_init));
-static GtkListStore *nautilus_shortcuts_model_new (NautilusPlacesSidebar *sidebar);
+static GtkTreeStore *nautilus_shortcuts_model_new (NautilusPlacesSidebar *sidebar);
 
 G_DEFINE_TYPE (NautilusPlacesSidebar, nautilus_places_sidebar, GTK_TYPE_SCROLLED_WINDOW);
 
@@ -216,8 +216,8 @@ add_separator (NautilusPlacesSidebar *sidebar,
 {
 	GtkTreeIter iter;
 
-	gtk_list_store_append (sidebar->store, &iter);
-	gtk_list_store_set (sidebar->store, &iter,
+	gtk_tree_store_append (sidebar->store, &iter, NULL);
+	gtk_tree_store_set (sidebar->store, &iter,
 			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, PLACES_SEPARATOR,
 			    PLACES_SIDEBAR_COLUMN_SECTION_TYPE, section_type,	
 			    -1);
@@ -281,8 +281,8 @@ add_place (NautilusPlacesSidebar *sidebar,
 		show_eject_button = (show_unmount || show_eject);
 	}
 
-	gtk_list_store_append (sidebar->store, &iter);
-	gtk_list_store_set (sidebar->store, &iter,
+	gtk_tree_store_append (sidebar->store, &iter, NULL);
+	gtk_tree_store_set (sidebar->store, &iter,
 			    PLACES_SIDEBAR_COLUMN_GICON, icon,
 			    PLACES_SIDEBAR_COLUMN_NAME, name,
 			    PLACES_SIDEBAR_COLUMN_URI, uri,
@@ -440,7 +440,7 @@ update_places (NautilusPlacesSidebar *sidebar)
 				    &last_iter,
 				    PLACES_SIDEBAR_COLUMN_URI, &last_uri, -1);
 	}
-	gtk_list_store_clear (sidebar->store);
+	gtk_tree_store_clear (sidebar->store);
 
 	sidebar->devices_header_added = FALSE;
 	sidebar->bookmarks_header_added = FALSE;
@@ -3095,13 +3095,6 @@ nautilus_places_sidebar_init (NautilusPlacesSidebar *sidebar)
 
 	col = GTK_TREE_VIEW_COLUMN (gtk_tree_view_column_new ());
 
-	/* initial padding */
-	cell = gtk_cell_renderer_text_new ();
-	gtk_tree_view_column_pack_start (col, cell, FALSE);
-	g_object_set (cell,
-		      "xpad", 6,
-		      NULL);
-
 	/* icon renderer */
 	cell = gtk_cell_renderer_pixbuf_new ();
 	g_object_set (cell, "follow-state", TRUE, NULL);
@@ -3430,7 +3423,7 @@ _nautilus_shortcuts_model_drag_source_init (GtkTreeDragSourceIface *iface)
 	iface->row_draggable = nautilus_shortcuts_model_row_draggable;
 }
 
-static GtkListStore *
+static GtkTreeStore *
 nautilus_shortcuts_model_new (NautilusPlacesSidebar *sidebar)
 {
 	NautilusShortcutsModel *model;
@@ -3453,9 +3446,9 @@ nautilus_shortcuts_model_new (NautilusPlacesSidebar *sidebar)
 	model = g_object_new (_nautilus_shortcuts_model_get_type (), NULL);
 	model->sidebar = sidebar;
 
-	gtk_list_store_set_column_types (GTK_LIST_STORE (model),
+	gtk_tree_store_set_column_types (GTK_TREE_STORE (model),
 					 PLACES_SIDEBAR_COLUMN_COUNT,
 					 model_types);
 
-	return GTK_LIST_STORE (model);
+	return GTK_TREE_STORE (model);
 }
