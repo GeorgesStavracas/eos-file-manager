@@ -362,38 +362,21 @@ sidebar_update_restore_selection (NautilusPlacesSidebar *sidebar,
 static void
 add_special_dirs (NautilusPlacesSidebar *sidebar)
 {
-	GList *dirs;
-	int index;
+	GList *dirs, *l;
 
-	dirs = NULL;
-	for (index = 0; index < G_USER_N_DIRECTORIES; index++) {
-		const char *path;
+	dirs = nautilus_get_default_xdg_directories ();
+
+	for (l = dirs; l != NULL; l = l->next) {
 		char *name;
 		GFile *root;
 		GIcon *icon;
 		char *mount_uri;
 		NautilusBookmark *bookmark;
 		guint idx;
+		GUserDirectory user_dir;
 
-		if (index == G_USER_DIRECTORY_DESKTOP ||
-		    index == G_USER_DIRECTORY_TEMPLATES ||
-		    index == G_USER_DIRECTORY_PUBLIC_SHARE) {
-			continue;
-		}
-
-		path = g_get_user_special_dir (index);
-
-		/* xdg resets special dirs to the home directory in case
-		 * it's not finiding what it expects. We don't want the home
-		 * to be added multiple times in that weird configuration.
-		 */
-		if (path == NULL
-		    || g_strcmp0 (path, g_get_home_dir ()) == 0
-		    || g_list_find_custom (dirs, path, (GCompareFunc) g_strcmp0) != NULL) {
-			continue;
-		}
-
-		root = g_file_new_for_path (path);
+		user_dir = GPOINTER_TO_INT (l->data);
+		root = g_file_new_for_path (g_get_user_special_dir (user_dir));
 
 		/* Don't add the bookmark to the sidebar if it was removed from
 		 * the user dir list, or if its location doesn't exist.
@@ -409,7 +392,7 @@ add_special_dirs (NautilusPlacesSidebar *sidebar)
 			icon = nautilus_bookmark_get_symbolic_icon (bookmark);
 		} else {
 			name = g_file_get_basename (root);
-			icon = nautilus_special_directory_get_symbolic_icon (index);
+			icon = nautilus_special_directory_get_symbolic_icon (user_dir);
 			idx = -1;
 		}
 
@@ -425,8 +408,6 @@ add_special_dirs (NautilusPlacesSidebar *sidebar)
 		g_object_unref (icon);
 		g_free (name);
 		g_free (mount_uri);
-
-		dirs = g_list_prepend (dirs, (char *)path);
 	}
 
 	g_list_free (dirs);
@@ -3141,40 +3122,15 @@ places_sidebar_sort_func (GtkTreeModel *model,
 			  GtkTreeIter *iter_b,
 			  gpointer user_data)
 {
-	SectionType section_type_a, section_type_b;
-	PlaceType place_type_a, place_type_b;
+	PlaceType place_type_a;
 	gint retval = 0;
 
 	gtk_tree_model_get (model, iter_a,
-			    PLACES_SIDEBAR_COLUMN_SECTION_TYPE, &section_type_a,
 			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &place_type_a,
 			    -1);
-	gtk_tree_model_get (model, iter_b,
-			    PLACES_SIDEBAR_COLUMN_SECTION_TYPE, &section_type_b,
-			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &place_type_b,
-			    -1);
 
-	/* fall back to the default order if we're not in the
-	 * XDG part of the computer section.
-	 */
-	if ((section_type_a == section_type_b) &&
-	    (section_type_a == SECTION_COMPUTER) &&
-	    (place_type_a == place_type_b) &&
-	    (place_type_a == PLACES_XDG_DIR)) {
-		gchar *name_a, *name_b;
-
-		gtk_tree_model_get (model, iter_a,
-				    PLACES_SIDEBAR_COLUMN_NAME, &name_a,
-				    -1);
-		gtk_tree_model_get (model, iter_b,
-				    PLACES_SIDEBAR_COLUMN_NAME, &name_b,
-				    -1);
-
-		retval = g_utf8_collate (name_a, name_b);
-
-		g_free (name_a);
-		g_free (name_b);
-	} else if (place_type_a == PLACES_CONNECT_SERVER) {
+	/* "Connect to Server" always ranks last... */
+	if (place_type_a == PLACES_CONNECT_SERVER) {
 		retval = 1;
 	}
 

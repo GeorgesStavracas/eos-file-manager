@@ -722,6 +722,36 @@ static const GUserDirectory default_dirs[] = {
 	G_USER_DIRECTORY_DOWNLOAD
 };
 
+GList *
+nautilus_get_default_xdg_directories (void)
+{
+	gint idx;
+	const gchar *path;
+	GList *retval = NULL;
+	GList *dirs = NULL;
+
+	for (idx = 0; idx < G_N_ELEMENTS (default_dirs); idx++) {
+		path = g_get_user_special_dir (default_dirs[idx]);
+
+		/* xdg resets special dirs to the home directory in case
+		 * it's not finiding what it expects. We don't want the home
+		 * to be added multiple times in that weird configuration.
+		 */
+		if (path == NULL
+		    || g_strcmp0 (path, g_get_home_dir ()) == 0
+		    || g_list_find_custom (dirs, path, (GCompareFunc) g_strcmp0) != NULL) {
+			continue;
+		}
+
+		dirs = g_list_prepend (dirs, (gpointer) path);
+		retval = g_list_prepend (retval, GINT_TO_POINTER (default_dirs[idx]));
+	}
+
+	g_list_free (dirs);
+
+	return g_list_reverse (retval);
+}
+
 GFile *
 nautilus_get_initial_location (void)
 {

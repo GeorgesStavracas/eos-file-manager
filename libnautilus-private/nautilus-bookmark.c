@@ -188,19 +188,19 @@ gboolean
 nautilus_bookmark_get_is_builtin (NautilusBookmark *bookmark)
 {
 	GUserDirectory xdg_type;
+	GList *default_xdg_dirs;
+	gboolean retval;
 
 	/* if this is not an XDG dir, it's never builtin */
 	if (!nautilus_bookmark_get_xdg_type (bookmark, &xdg_type)) {
 		return FALSE;
 	}
 
-	/* exclude XDG locations which are not in our builtin list */
-	if (xdg_type == G_USER_DIRECTORY_DESKTOP &&
-	    !g_settings_get_boolean (gnome_background_preferences, NAUTILUS_PREFERENCES_SHOW_DESKTOP)) {
-		return FALSE;
-	}
+	default_xdg_dirs = nautilus_get_default_xdg_directories ();
+	retval = (g_list_find (default_xdg_dirs, GINT_TO_POINTER (xdg_type)) != NULL);
 
-	return (xdg_type != G_USER_DIRECTORY_TEMPLATES) && (xdg_type != G_USER_DIRECTORY_PUBLIC_SHARE);
+	g_list_free (default_xdg_dirs);
+	return retval;
 }
 
 gboolean
