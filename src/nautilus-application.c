@@ -1367,7 +1367,7 @@ init_icons_and_styles (void)
 {
 	/* initialize search path for custom icons */
 	gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (),
-					   NAUTILUS_DATADIR G_DIR_SEPARATOR_S "icons");
+					   EOS_FILE_MANAGER_DATADIR G_DIR_SEPARATOR_S "icons");
 }
 
 static void

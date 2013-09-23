@@ -18,7 +18,7 @@ dnl Interface break is not allowed.
 m4_define(nautilus_extension_current,  5)
 m4_define(nautilus_extension_revision, 0)
 
-AC_INIT([nautilus],[3.8.2],[http://bugzilla.gnome.org/enter_bug.cgi?product=nautilus])
+AC_INIT([eos-file-manager],[3.8.2],[http://www.endlessm.com])
 
 dnl ===========================================================================
 
@@ -52,7 +52,7 @@ AC_CHECK_LIB(m, floor)
 
 dnl ==========================================================================
 
-GETTEXT_PACKAGE=nautilus
+GETTEXT_PACKAGE=eos-file-manager
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",
                    [the gettext translation domain])
@@ -263,7 +263,7 @@ PKG_CHECK_MODULES(BASE, [
 	glib-2.0 >= glib_minver
 ])
 
-dnl common libs (eel, nautilus)
+dnl common libs (eel, eos-file-managerx)
 PKG_CHECK_MODULES(COMMON, [
 	gail-3.0
 	gnome-desktop-3.0 >= gnome_desktop_minver
@@ -271,8 +271,8 @@ PKG_CHECK_MODULES(COMMON, [
 	x11
 ])
 
-dnl additional nautilus libs
-PKG_CHECK_MODULES(NAUTILUS, [
+dnl additional eos-file-manager libs
+PKG_CHECK_MODULES(EOS_FILE_MANAGER, [
 	gthread-2.0 >= glib_minver
 	gmodule-no-export-2.0 >= glib_minver
 	gio-2.0 >= glib_minver
@@ -302,10 +302,10 @@ AM_CONDITIONAL(ENABLE_UPDATE_MIMEDB, test x$enable_update_mimedb = xyes)
 AC_CONFIG_FILES([
 Makefile
 data/Makefile
-data/nautilus.desktop.in
-data/nautilus-autorun-software.desktop.in
-data/nautilus-classic.desktop
-data/nautilus-connect-server.desktop.in
+data/eos-file-manager.desktop.in
+data/eos-file-manager-autorun-software.desktop.in
+data/eos-file-manager-classic.desktop
+data/eos-file-manager-connect-server.desktop.in
 docs/Makefile
 docs/reference/Makefile
 docs/reference/libnautilus-extension/Makefile
@@ -325,7 +325,7 @@ AC_OUTPUT
 
 dnl ==========================================================================
 echo "
-nautilus-$VERSION:
+eos-file-manager-$VERSION:
 
 	prefix:                 ${prefix}
 	source code location:	${srcdir}

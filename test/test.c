@@ -60,7 +60,7 @@ test_pixbuf_new_named (const char *name, float scale)
 	if (name[0] == '/') {
 		path = g_strdup (name);
 	} else {
-		path = g_strdup_printf ("%s/%s", NAUTILUS_DATADIR, name);
+		path = g_strdup_printf ("%s/%s", EOS_FILE_MANAGER_DATADIR, name);
 	}
 
 	pixbuf = gdk_pixbuf_new_from_file (path, NULL);

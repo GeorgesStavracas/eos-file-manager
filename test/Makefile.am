@@ -4,10 +4,10 @@ INCLUDES =\
 	-I$(top_srcdir) \
 	$(BASE_CFLAGS) \
 	$(COMMON_CFLAGS) \
-	$(NAUTILUS_CFLAGS) \
+	$(EOS_FILE_MANAGER_CFLAGS) \
 	$(WARNING_CFLAGS) \
 	-DVERSION="\"$(VERSION)\"" \
-	-DNAUTILUS_DATADIR=\""$(datadir)/nautilus"\" \
+	-DEOS_FILE_MANAGER_DATADIR=\""$(datadir)/eos-file-manager"\" \
 	-DGNOMELOCALEDIR=\""$(prefix)/${DATADIRNAME}/locale"\"	\
 	$(NULL)
 
@@ -15,7 +15,7 @@ LDADD =\
 	$(top_builddir)/libnautilus-private/libnautilus-private.la \
 	$(BASE_LIBS) \
 	$(COMMON_LIBS) \
-	$(NAUTILUS_LIBS) \
+	$(EOS_FILE_MANAGER_LIBS) \
 	$(NULL)
 
 noinst_PROGRAMS =\
