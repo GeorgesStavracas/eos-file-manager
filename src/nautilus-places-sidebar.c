@@ -482,17 +482,6 @@ update_places (NautilusPlacesSidebar *sidebar)
 	add_heading (sidebar, SECTION_COMPUTER,
 		     _("Places"));
 
-	/* home folder */
-	mount_uri = nautilus_get_home_directory_uri ();
-	icon = g_themed_icon_new (NAUTILUS_ICON_HOME);
-	add_place (sidebar, PLACES_BUILT_IN,
-		   SECTION_COMPUTER,
-		   _("Home"), icon, mount_uri,
-		   NULL, NULL, NULL, 0,
-		   _("Open your personal folder"));
-	g_object_unref (icon);
-	g_free (mount_uri);
-
 	if (g_settings_get_boolean (gnome_background_preferences, NAUTILUS_PREFERENCES_SHOW_DESKTOP)) {
 		/* desktop */
 		mount_uri = nautilus_get_desktop_directory_uri ();
