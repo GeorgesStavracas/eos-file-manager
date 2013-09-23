@@ -3305,6 +3305,7 @@ nautilus_places_sidebar_init (NautilusPlacesSidebar *sidebar)
   	/* tree view */
 	tree_view = GTK_TREE_VIEW (gtk_tree_view_new ());
 	gtk_tree_view_set_headers_visible (tree_view, FALSE);
+	gtk_widget_set_valign (GTK_WIDGET (tree_view), GTK_ALIGN_CENTER);
 
 	col = GTK_TREE_VIEW_COLUMN (gtk_tree_view_column_new ());
 
