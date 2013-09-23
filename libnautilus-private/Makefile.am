@@ -7,14 +7,14 @@ INCLUDES = 						\
 	-I$(top_builddir) 				\
 	$(BASE_CFLAGS)					\
 	$(COMMON_CFLAGS)				\
-	$(NAUTILUS_CFLAGS)				\
+	$(EOS_FILE_MANAGER_CFLAGS)			\
 	$(WARNING_CFLAGS)				\
 	$(DISABLE_DEPRECATED)				\
 	$(TRACKER_CFLAGS)				\
 	-DDATADIR=\""$(datadir)"\" 			\
-	-DSYSCONFDIR=\""$(sysconfdir)"\" 			\
-	-DNAUTILUS_DATADIR=\""$(datadir)/nautilus"\" 	\
-	-DNAUTILUS_EXTENSIONDIR=\""$(libdir)/nautilus/extensions-3.0"\" \
+	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
+	-DEOS_FILE_MANAGER_DATADIR=\""$(datadir)/eos-file-manager"\" 	\
+	-DNAUTILUS_EXTENSIONDIR=\""$(libdir)/eos-file-manager/extensions-3.0"\" \
 	$(NULL)
 
 dbus_built_sources = nautilus-generated.c nautilus-generated.h
@@ -48,7 +48,7 @@ libnautilus_private_la_LIBADD =		\
 	$(top_builddir)/libnautilus-extension/libnautilus-extension.la \
 	$(BASE_LIBS)			\
 	$(COMMON_LIBS)			\
-	$(NAUTILUS_LIBS)		\
+	$(EOS_FILE_MANAGER_LIBS)		\
 	-lm				\
 	$(NULL)
 

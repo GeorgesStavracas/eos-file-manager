@@ -3,8 +3,8 @@ NULL =
 SUBDIRS = reference
 
 man_MANS = \
-	nautilus.1 \
-	nautilus-connect-server.1 \
+	eos-file-manager.1 \
+	eos-file-manager-connect-server.1 \
 	$(NULL)
 
 EXTRA_DIST = \

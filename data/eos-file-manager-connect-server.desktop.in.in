@@ -1,13 +1,12 @@
 [Desktop Entry]
-_Name=Run Software
-TryExec=nautilus-autorun-software
-Exec=nautilus-autorun-software %u
-Icon=application-x-executable
+_Name=Connect to Server
+TryExec=eos-file-manager-connect-server
+Exec=eos-file-manager-connect-server
+Icon=applications-internet
 NoDisplay=true
 Terminal=false
 StartupNotify=true
 Type=Application
-MimeType=x-content/unix-software;
 X-GNOME-Bugzilla-Bugzilla=GNOME
 X-GNOME-Bugzilla-Product=nautilus
 X-GNOME-Bugzilla-Component=general

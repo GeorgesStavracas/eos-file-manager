@@ -1,20 +1,20 @@
 NULL=
 
-xml_in_files = nautilus.xml.in
+xml_in_files = eos-file-manager.xml.in
 xml_files = $(xml_in_files:.xml.in=.xml)
 @INTLTOOL_XML_RULE@
 
 desktopdir       = $(datadir)/applications
 desktop_DATA     = 					\
 	$(desktop_in_files:.desktop.in=.desktop)	\
-	nautilus-classic.desktop
+	eos-file-manager-classic.desktop
 desktop_in_files = 					\
-	nautilus.desktop.in				\
-	nautilus-autorun-software.desktop.in		\
-	nautilus-connect-server.desktop.in
+	eos-file-manager.desktop.in				\
+	eos-file-manager-autorun-software.desktop.in		\
+	eos-file-manager-connect-server.desktop.in
 
 autostartdir     = $(sysconfdir)/xdg/autostart
-autostart_in_files = nautilus-autostart.desktop.in
+autostart_in_files = eos-file-manager-autostart.desktop.in
 autostart_DATA = $(autostart_in_files:.desktop.in=.desktop)
 
 @INTLTOOL_DESKTOP_RULE@
@@ -39,18 +39,18 @@ org.gnome.Nautilus.SearchProvider.service: org.gnome.Nautilus.SearchProvider.ser
 	$(AM_V_GEN) sed -e "s|\@bindir\@|$(bindir)|" $< > $@
 
 searchproviderdir = $(datadir)/gnome-shell/search-providers
-searchprovider_DATA = nautilus-search-provider.ini
+searchprovider_DATA = eos-file-manager-search-provider.ini
 
-nautilusdatadir = $(datadir)/nautilus
+eosfilemanagerdatadir = $(datadir)/eos-file-manager
 
-nautilusdata_DATA = \
-	nautilus-extras.placeholder 	\
-	nautilus-suggested.placeholder 	\
+eosfilemanagerdata_DATA = \
+	eos-file-manager-extras.placeholder 	\
+	eos-file-manager-suggested.placeholder 	\
 	$(NULL)
 
-EXTRA_DIST = $(nautilusdata_DATA) 	\
-	nautilus.desktop		\
-	nautilus.desktop.in		\
+EXTRA_DIST = $(eosfilemanagerdata_DATA) \
+	eos-file-manager.desktop	\
+	eos-file-manager.desktop.in	\
 	dbus-interfaces.xml		\
 	freedesktop-dbus-interfaces.xml	\
 	shell-search-provider-dbus-interfaces.xml \

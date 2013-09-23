@@ -1,13 +1,13 @@
 include $(top_srcdir)/Makefile.shared
 
 bin_PROGRAMS=					\
-	nautilus				\
-	nautilus-autorun-software		\
-	nautilus-connect-server			\
+	eos-file-manager			\
+	eos-file-manager-autorun-software	\
+	eos-file-manager-connect-server		\
 	$(NULL)
 
 libexec_PROGRAMS=				\
-	nautilus-convert-metadata		\
+	eos-file-manager-convert-metadata	\
 	$(NULL)
 
 INCLUDES =							\
@@ -15,16 +15,14 @@ INCLUDES =							\
 	-I$(top_builddir)/libnautilus-private 			\
 	$(BASE_CFLAGS) 						\
 	$(COMMON_CFLAGS)					\
-	$(NAUTILUS_CFLAGS)					\
+	$(EOS_FILE_MANAGER_CFLAGS)				\
 	$(WARNING_CFLAGS)					\
 	$(EXIF_CFLAGS)						\
 	$(EXEMPI_CFLAGS)                                        \
 	-DDATADIR=\""$(datadir)"\" 				\
 	-DLIBDIR=\""$(libdir)"\" 				\
 	-DLIBEXECDIR=\""$(libexecdir)"\" 			\
-	-DNAUTILUS_DATADIR=\""$(datadir)/nautilus"\" 		\
-	-DUIDIR=\""$(datadir)/nautilus/ui"\" 		\
-	-DNAUTILUS_PIXMAPDIR=\""$(datadir)/pixmaps/nautilus"\" 	\
+	-DEOS_FILE_MANAGER_DATADIR=\""$(datadir)/eos-file-manager"\" 	\
 	-DPREFIX=\""$(prefix)"\" 				\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 			\
 	-DVERSION="\"$(VERSION)\"" 				\
@@ -35,7 +33,7 @@ LDADD =\
 	$(top_builddir)/libnautilus-private/libnautilus-private.la  \
 	$(BASE_LIBS) \
 	$(COMMON_LIBS) \
-	$(NAUTILUS_LIBS) \
+	$(EOS_FILE_MANAGER_LIBS) \
 	$(CORE_LIBS) \
 	$(EXIF_LIBS) \
 	$(EXEMPI_LIBS) \
@@ -71,11 +69,11 @@ headers =					\
 	nautilus-special-location-bar.h		\
 	$(NULL)
 
-resource_files = $(shell glib-compile-resources --sourcedir=$(srcdir) --generate-dependencies $(srcdir)/nautilus.gresource.xml)
-nautilus-resources.c: nautilus.gresource.xml $(resource_files)
-	glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-source --c-name nautilus $(srcdir)/nautilus.gresource.xml
-nautilus-resources.h: nautilus.gresource.xml $(resource_files)
-	glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-header --c-name nautilus $(srcdir)/nautilus.gresource.xml
+resource_files = $(shell glib-compile-resources --sourcedir=$(srcdir) --generate-dependencies $(srcdir)/eos-file-manager.gresource.xml)
+nautilus-resources.c: eos-file-manager.gresource.xml $(resource_files)
+	glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-source --c-name nautilus $(srcdir)/eos-file-manager.gresource.xml
+nautilus-resources.h: eos-file-manager.gresource.xml $(resource_files)
+	glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-header --c-name nautilus $(srcdir)/eos-file-manager.gresource.xml
 
 nautilus-enum-types.h: stamp-nautilus-enum-types.h
 	$(AM_V_GEN)true
@@ -125,7 +123,7 @@ nautilus_built_sources = \
 	nautilus-enum-types.c \
 	$(NULL)
 
-nautilus_SOURCES = \
+eos_file_manager_SOURCES = \
 	nautilus-actions.h			\
 	nautilus-application.c			\
 	nautilus-application.h			\
@@ -209,7 +207,7 @@ nautilus_SOURCES = \
 	nautilus-x-content-bar.h		\
 	$(NULL)
 
-nodist_nautilus_SOURCES = \
+nodist_eos_file_manager_SOURCES = \
 	$(nautilus_built_sources) \
 	$(NULL)
 
@@ -218,20 +216,20 @@ EMPTY_VIEW_SOURCES = \
 	nautilus-empty-view.h
 
 if ENABLE_EMPTY_VIEW
-nautilus_SOURCES += $(EMPTY_VIEW_SOURCES)
+eos_file_manager_SOURCES += $(EMPTY_VIEW_SOURCES)
 endif
 
-nautilus_autorun_software_SOURCES= 			\
+eos_file_manager_autorun_software_SOURCES= 		\
 	nautilus-autorun-software.c			\
 	$(NULL)
 
-nautilus_connect_server_SOURCES= \
+eos_file_manager_connect_server_SOURCES= \
 	nautilus-connect-server-dialog.c        \
 	nautilus-connect-server-dialog.h        \
 	nautilus-connect-server.c		\
 	$(NULL)
 
-nautilus_convert_metadata_SOURCES= \
+eos_file_manager_convert_metadata_SOURCES= \
 	nautilus-convert-metadata.c	\
 	$(NULL)
 
@@ -253,7 +251,7 @@ CLEANFILES = \
 EXTRA_DIST =					\
 	$(resource_files)			\
 	$(server_in_files)			\
-	nautilus.gresource.xml			\
+	eos-file-manager.gresource.xml		\
 	check-nautilus				\
 	$(NULL)
 

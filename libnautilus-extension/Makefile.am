@@ -20,7 +20,7 @@ libnautilus_extension_la_LDFLAGS=\
 
 libnautilus_extension_la_LIBADD = $(BASE_LIBS)
 
-libnautilus_extension_includedir=$(includedir)/nautilus/libnautilus-extension
+libnautilus_extension_includedir=$(includedir)/eos-file-manager/libnautilus-extension
 
 libnautilus_extension_include_HEADERS=		\
 	nautilus-column-provider.h              \
