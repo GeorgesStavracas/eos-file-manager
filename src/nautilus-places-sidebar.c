@@ -136,7 +136,6 @@ enum {
 	PLACES_SIDEBAR_COLUMN_BOOKMARK,
 	PLACES_SIDEBAR_COLUMN_TOOLTIP,
 	PLACES_SIDEBAR_COLUMN_SECTION_TYPE,
-	PLACES_SIDEBAR_COLUMN_HEADING_TEXT,
 
 	PLACES_SIDEBAR_COLUMN_COUNT
 };
@@ -146,7 +145,7 @@ typedef enum {
 	PLACES_XDG_DIR,
 	PLACES_MOUNTED_VOLUME,
 	PLACES_BOOKMARK,
-	PLACES_HEADING,
+	PLACES_SEPARATOR,
 	PLACES_CONNECT_SERVER
 } PlaceType;
 
@@ -212,19 +211,15 @@ static GtkListStore *nautilus_shortcuts_model_new (NautilusPlacesSidebar *sideba
 G_DEFINE_TYPE (NautilusPlacesSidebar, nautilus_places_sidebar, GTK_TYPE_SCROLLED_WINDOW);
 
 static GtkTreeIter
-add_heading (NautilusPlacesSidebar *sidebar,
-	     SectionType section_type,
-	     const gchar *title)
+add_separator (NautilusPlacesSidebar *sidebar,
+	       SectionType section_type)
 {
 	GtkTreeIter iter;
 
 	gtk_list_store_append (sidebar->store, &iter);
 	gtk_list_store_set (sidebar->store, &iter,
-			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, PLACES_HEADING,
+			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, PLACES_SEPARATOR,
 			    PLACES_SIDEBAR_COLUMN_SECTION_TYPE, section_type,	
-			    PLACES_SIDEBAR_COLUMN_HEADING_TEXT, title,
-			    PLACES_SIDEBAR_COLUMN_EJECT, FALSE,
-			    PLACES_SIDEBAR_COLUMN_NO_EJECT, TRUE,
 			    -1);
 
 	return iter;
@@ -237,16 +232,14 @@ check_heading_for_section (NautilusPlacesSidebar *sidebar,
 	switch (section_type) {
 	case SECTION_DEVICES:
 		if (!sidebar->devices_header_added) {
-			add_heading (sidebar, SECTION_DEVICES,
-				     _("Devices"));
+			add_separator (sidebar, SECTION_DEVICES);
 			sidebar->devices_header_added = TRUE;
 		}
 
 		break;
 	case SECTION_BOOKMARKS:
 		if (!sidebar->bookmarks_header_added) {
-			add_heading (sidebar, SECTION_BOOKMARKS,
-				     _("Bookmarks"));
+			add_separator (sidebar, SECTION_BOOKMARKS);
 			sidebar->bookmarks_header_added = TRUE;
 		}
 
@@ -459,9 +452,7 @@ update_places (NautilusPlacesSidebar *sidebar)
 	volume_monitor = sidebar->volume_monitor;
 
 	/* add built in bookmarks */
-
-	add_heading (sidebar, SECTION_COMPUTER,
-		     _("Places"));
+	add_separator (sidebar, SECTION_COMPUTER);
 
 	if (g_settings_get_boolean (gnome_background_preferences, NAUTILUS_PREFERENCES_SHOW_DESKTOP)) {
 		/* desktop */
@@ -703,8 +694,7 @@ update_places (NautilusPlacesSidebar *sidebar)
 	}
 
 	/* network */
-	add_heading (sidebar, SECTION_NETWORK,
-		     _("Network"));
+	add_separator (sidebar, SECTION_NETWORK);
 
  	mount_uri = "network:///"; /* No need to strdup */
 	icon = g_themed_icon_new (NAUTILUS_ICON_NETWORK);
@@ -1005,8 +995,8 @@ compute_drop_position (GtkTreeView             *tree_view,
 			    -1);
 
 	if (section_type != SECTION_BOOKMARKS &&
-	    place_type == PLACES_HEADING) {
-		/* never drop on headings, but special case the bookmarks heading,
+	    place_type == PLACES_SEPARATOR) {
+		/* never drop on separators, but special case the bookmarks separator,
 		 * so we can drop bookmarks in between it and the first item when
 		 * reordering.
 		 */
@@ -1361,8 +1351,8 @@ drag_data_received_callback (GtkWidget *widget,
 			goto out;
 		}
 
-		if (tree_pos == GTK_TREE_VIEW_DROP_AFTER && place_type != PLACES_HEADING) {
-			/* heading already has position 0 */
+		if (tree_pos == GTK_TREE_VIEW_DROP_AFTER && place_type != PLACES_SEPARATOR) {
+			/* separator already has position 0 */
 			position++;
 		}
 
@@ -2528,7 +2518,7 @@ find_prev_or_next_row (NautilusPlacesSidebar *sidebar,
 		gtk_tree_model_get (model, iter,
 				    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &place_type,
 				    -1);
-		if (place_type == PLACES_HEADING) {
+		if (place_type == PLACES_SEPARATOR) {
 			if (go_up) {
 				res = gtk_tree_model_iter_previous (model, iter);
 			} else {
@@ -2924,7 +2914,7 @@ bookmarks_button_release_event_cb (GtkWidget *widget,
 				    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &row_type,
 				    -1);
 
-		if (row_type != PLACES_HEADING &&
+		if (row_type != PLACES_SEPARATOR &&
 		    row_type != PLACES_CONNECT_SERVER) {
 			bookmarks_popup_menu (sidebar, event);
 		}
@@ -3008,33 +2998,9 @@ trash_state_changed_cb (NautilusTrashMonitor *trash_monitor,
 }
 
 static gboolean
-tree_selection_func (GtkTreeSelection *selection,
-		     GtkTreeModel *model,
-		     GtkTreePath *path,
-		     gboolean path_currently_selected,
-		     gpointer user_data)
-{
-	GtkTreeIter iter;
-	PlaceType row_type;
-
-	gtk_tree_model_get_iter (model, &iter, path);
-	gtk_tree_model_get (model, &iter,
-			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &row_type,
-			    -1);
-
-	if (row_type == PLACES_HEADING) {
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-static void
-icon_cell_renderer_func (GtkTreeViewColumn *column,
-			 GtkCellRenderer *cell,
-			 GtkTreeModel *model,
-			 GtkTreeIter *iter,
-			 gpointer user_data)
+places_sidebar_separator_func (GtkTreeModel *model,
+			       GtkTreeIter  *iter,
+			       gpointer      user_data)
 {
 	PlaceType type;
 
@@ -3042,67 +3008,7 @@ icon_cell_renderer_func (GtkTreeViewColumn *column,
 			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &type,
 			    -1);
 
-	if (type == PLACES_HEADING) {
-		g_object_set (cell,
-			      "visible", FALSE,
-			      NULL);
-	} else {
-		g_object_set (cell,
-			      "visible", TRUE,
-			      NULL);
-	}
-}
-
-static void
-padding_cell_renderer_func (GtkTreeViewColumn *column,
-			    GtkCellRenderer *cell,
-			    GtkTreeModel *model,
-			    GtkTreeIter *iter,
-			    gpointer user_data)
-{
-	PlaceType type;
-
-	gtk_tree_model_get (model, iter,
-			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &type,
-			    -1);
-
-	if (type == PLACES_HEADING) {
-		g_object_set (cell,
-			      "visible", FALSE,
-			      "xpad", 0,
-			      "ypad", 0,
-			      NULL);
-	} else {
-		g_object_set (cell,
-			      "visible", TRUE,
-			      "xpad", 3,
-			      "ypad", 3,
-			      NULL);
-	}
-}
-
-static void
-heading_cell_renderer_func (GtkTreeViewColumn *column,
-			    GtkCellRenderer *cell,
-			    GtkTreeModel *model,
-			    GtkTreeIter *iter,
-			    gpointer user_data)
-{
-	PlaceType type;
-
-	gtk_tree_model_get (model, iter,
-			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &type,
-			    -1);
-
-	if (type == PLACES_HEADING) {
-		g_object_set (cell,
-			      "visible", TRUE,
-			      NULL);
-	} else {
-		g_object_set (cell,
-			      "visible", FALSE,
-			      NULL);
-	}
+	return (type == PLACES_SEPARATOR);
 }
 
 static gint
@@ -3212,29 +3118,6 @@ nautilus_places_sidebar_init (NautilusPlacesSidebar *sidebar)
 		      "xpad", 6,
 		      NULL);
 
-	/* headings */
-	cell = gtk_cell_renderer_text_new ();
-	gtk_tree_view_column_pack_start (col, cell, FALSE);
-	gtk_tree_view_column_set_attributes (col, cell,
-					     "text", PLACES_SIDEBAR_COLUMN_HEADING_TEXT,
-					     NULL);
-	g_object_set (cell,
-		      "weight", PANGO_WEIGHT_BOLD,
-		      "weight-set", TRUE,
-		      "ypad", 6,
-		      "xpad", 0,
-		      NULL);
-	gtk_tree_view_column_set_cell_data_func (col, cell,
-						 heading_cell_renderer_func,
-						 sidebar, NULL);
-
-	/* icon padding */
-	cell = gtk_cell_renderer_text_new ();
-	gtk_tree_view_column_pack_start (col, cell, FALSE);
-	gtk_tree_view_column_set_cell_data_func (col, cell,
-						 padding_cell_renderer_func,
-						 sidebar, NULL);
-
 	/* icon renderer */
 	cell = gtk_cell_renderer_pixbuf_new ();
 	g_object_set (cell, "follow-state", TRUE, NULL);
@@ -3242,9 +3125,6 @@ nautilus_places_sidebar_init (NautilusPlacesSidebar *sidebar)
 	gtk_tree_view_column_set_attributes (col, cell,
 					     "gicon", PLACES_SIDEBAR_COLUMN_GICON,
 					     NULL);
-	gtk_tree_view_column_set_cell_data_func (col, cell,
-						 icon_cell_renderer_func,
-						 sidebar, NULL);
 
 	/* eject text renderer */
 	cell = gtk_cell_renderer_text_new ();
@@ -3310,6 +3190,9 @@ nautilus_places_sidebar_init (NautilusPlacesSidebar *sidebar)
 					 PLACES_SIDEBAR_COLUMN_NAME,
 					 places_sidebar_sort_func,
 					 sidebar, NULL);
+	gtk_tree_view_set_row_separator_func (tree_view,
+					      places_sidebar_separator_func,
+					      sidebar, NULL);
 
 	gtk_tree_view_set_model (tree_view, GTK_TREE_MODEL (sidebar->store));
 	gtk_container_add (GTK_CONTAINER (sidebar), GTK_WIDGET (tree_view));
@@ -3322,11 +3205,6 @@ nautilus_places_sidebar_init (NautilusPlacesSidebar *sidebar)
 	gtk_tree_view_set_search_column (tree_view, PLACES_SIDEBAR_COLUMN_NAME);
 	selection = gtk_tree_view_get_selection (tree_view);
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_BROWSE);
-
-	gtk_tree_selection_set_select_function (selection,
-						tree_selection_func,
-						sidebar,
-						NULL);
 
 	gtk_tree_view_enable_model_drag_source (GTK_TREE_VIEW (tree_view),
 						GDK_BUTTON1_MASK,
@@ -3542,19 +3420,18 @@ nautilus_shortcuts_model_row_draggable (GtkTreeDragSource *drag_source,
 {
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	PlaceType place_type;
 	SectionType section_type;
 
 	model = GTK_TREE_MODEL (drag_source);
 
 	gtk_tree_model_get_iter (model, &iter, path);
 	gtk_tree_model_get (model, &iter,
-			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &place_type,
 			    PLACES_SIDEBAR_COLUMN_SECTION_TYPE, &section_type,
 			    -1);
 
-	if (place_type != PLACES_HEADING && section_type == SECTION_BOOKMARKS)
+	if (section_type == SECTION_BOOKMARKS) {
 		return TRUE;
+	}
 
 	return FALSE;
 }
@@ -3594,8 +3471,7 @@ nautilus_shortcuts_model_new (NautilusPlacesSidebar *sidebar)
 		G_TYPE_BOOLEAN,
 		G_TYPE_BOOLEAN,
 		G_TYPE_STRING,
-		G_TYPE_INT,
-		G_TYPE_STRING
+		G_TYPE_INT
 	};
 
 	model = g_object_new (_nautilus_shortcuts_model_get_type (), NULL);
