@@ -63,6 +63,7 @@ struct NautilusWindowDetails
 
         /* Toolbar */
         GtkWidget *toolbar;
+        GtkWidget *path_bar;
         gboolean temporary_navigation_bar;
 
         /* focus widget before the location bar has been shown temporarily */

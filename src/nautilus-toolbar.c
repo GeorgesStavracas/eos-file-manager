@@ -47,7 +47,6 @@ struct _NautilusToolbarPriv {
 	GtkWidget *toolbar;
 	NautilusWindow *window;
 
-	GtkWidget *path_bar;
 	GtkWidget *location_entry;
 
 	GtkToolItem *back_forward;
@@ -79,8 +78,6 @@ toolbar_update_appearance (NautilusToolbar *self)
 
 	gtk_widget_set_visible (self->priv->location_entry,
 				show_location_entry);
-	gtk_widget_set_visible (self->priv->path_bar,
-				!show_location_entry);
 }
 
 static gint
@@ -463,9 +460,6 @@ nautilus_toolbar_constructed (GObject *obj)
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_widget_show (hbox);
 
-	self->priv->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), self->priv->path_bar, TRUE, TRUE, 0);
-
 	/* entry-like location bar */
 	self->priv->location_entry = nautilus_location_entry_new ();
 	gtk_box_pack_start (GTK_BOX (hbox), self->priv->location_entry, TRUE, TRUE, 0);
@@ -492,10 +486,6 @@ nautilus_toolbar_constructed (GObject *obj)
 	gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (tool_button));
 	tool_button = toolbar_create_toolbutton (self, FALSE, TRUE, NAUTILUS_ACTION_VIEW_GRID, NULL);
 	gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (tool_button));
-	tool_button = toolbar_create_toolbutton (self, TRUE, FALSE, "go-down-symbolic", _("View options"));
-	gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (tool_button));
-	menu = gtk_ui_manager_get_widget (ui_manager, "/ViewMenu");
-	gtk_menu_button_set_popup (GTK_MENU_BUTTON (tool_button), menu);
 
 	gtk_style_context_add_class (gtk_widget_get_style_context (box),
 				     GTK_STYLE_CLASS_RAISED);
@@ -622,12 +612,6 @@ nautilus_toolbar_new (NautilusWindow *window)
 			     "window", window,
 			     "orientation", GTK_ORIENTATION_VERTICAL,
 			     NULL);
-}
-
-GtkWidget *
-nautilus_toolbar_get_path_bar (NautilusToolbar *self)
-{
-	return self->priv->path_bar;
 }
 
 GtkWidget *
