@@ -1,5 +1,6 @@
 <ui>
-  <popup name="ViewMenu" accelerators="true">
+  <!-- These all belong to ViewMenu -->
+  <popup name="ActionMenu" accelerators="true">
     <placeholder name="Layout Options">
       <menuitem name="Manual Layout" action="Manual Layout"/>
       <placeholder name="Auto Layout">
@@ -18,4 +19,5 @@
     <placeholder name="View Details">
     </placeholder>
   </popup>
+  <!-- End of ViewMenu -->
 </ui>

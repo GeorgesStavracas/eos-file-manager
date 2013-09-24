@@ -15,24 +15,10 @@
 <accelerator action="ZoomOutAccel"/>
 <accelerator action="PromptLocationAccel"/>
 <accelerator action="ReloadAccel"/>
+<!--
 <popup name="ViewMenu" accelerators="true">
-  <placeholder name="Zoom Items Placeholder">
-    <menuitem name="Zoom In" action="Zoom In"/>
-    <menuitem name="Zoom Out" action="Zoom Out"/>
-    <menuitem name="Zoom Normal" action="Zoom Normal"/>
-  </placeholder>
-  <separator/>
-  <menuitem name="Stop" action="Stop"/>
-  <menuitem name="Reload" action="Reload"/>
-  <separator/>
-  <placeholder name="Layout Options"/>
-  <separator/>
-  <menuitem name="Show Hide Sidebar" action="Show Hide Sidebar"/>
-  <separator/>
-  <placeholder name="View Preferences"/>
-  <separator/>
-  <placeholder name="View Details"/>
 </popup>
+-->
 <popup name="ActionMenu" accelerators="true">
   <placeholder name="New Items Placeholder">
     <menuitem name="New Tab" action="New Tab"/>
@@ -51,7 +37,6 @@
   <placeholder name="Edit Actions">
     <placeholder name="Undostack Actions"/>
     <separator/>
-    <separator/>
     <placeholder name="Select Items"/>
     <separator/>
     <placeholder name="File Items Placeholder"/>
@@ -59,6 +44,25 @@
     <menuitem name="Preferences" action="Preferences"/>
   </placeholder>
   <separator/>
+  <!-- These belong to ViewMenu above -->
+  <placeholder name="Zoom Items Placeholder">
+    <menuitem name="Zoom In" action="Zoom In"/>
+    <menuitem name="Zoom Out" action="Zoom Out"/>
+    <menuitem name="Zoom Normal" action="Zoom Normal"/>
+  </placeholder>
+  <separator/>
+  <menuitem name="Stop" action="Stop"/>
+  <menuitem name="Reload" action="Reload"/>
+  <separator/>
+  <placeholder name="Layout Options"/>
+  <separator/>
+  <menuitem name="Show Hide Sidebar" action="Show Hide Sidebar"/>
+  <separator/>
+  <placeholder name="View Preferences"/>
+  <separator/>
+  <placeholder name="View Details"/>
+  <separator/>
+  <!-- End of ViewMenu -->
   <menuitem name="Add Bookmark" action="Add Bookmark"/>
   <menuitem name="Edit Bookmark" action="Edit Bookmarks"/>
   <menuitem name="Enter Location" action="Enter Location"/>
