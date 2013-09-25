@@ -1377,6 +1377,19 @@ nautilus_window_report_location_change (NautilusWindow *window)
 	}
 }
 
+static void
+nautilus_window_sync_search_widget (NautilusWindow *window)
+{
+	NautilusWindowSlot *active_slot;
+	GtkWidget *query_editor;
+
+	active_slot = nautilus_window_get_active_slot (window);
+	query_editor = nautilus_window_slot_get_query_editor (active_slot);
+
+	nautilus_toolbar_set_query_editor (NAUTILUS_TOOLBAR (window->details->toolbar),
+					   query_editor);
+}
+
 void
 nautilus_window_set_active_slot (NautilusWindow *window, NautilusWindowSlot *new_slot)
 {
@@ -1418,6 +1431,9 @@ nautilus_window_set_active_slot (NautilusWindow *window, NautilusWindowSlot *new
                         /* inform window */
                         nautilus_window_connect_content_view (window, view);
                 }
+
+		/* sync search bar */
+		nautilus_window_sync_search_widget (window);
 
 		/* inform sidebar panels */
                 nautilus_window_report_location_change (window);

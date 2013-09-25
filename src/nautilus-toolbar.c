@@ -48,6 +48,8 @@ struct _NautilusToolbarPriv {
 	NautilusWindow *window;
 
 	GtkWidget *location_entry;
+	GtkWidget *bar_box;
+	GtkWidget *query_editor;
 
 	GtkToolItem *back_forward;
 
@@ -78,6 +80,11 @@ toolbar_update_appearance (NautilusToolbar *self)
 
 	gtk_widget_set_visible (self->priv->location_entry,
 				show_location_entry);
+
+	if (self->priv->query_editor) {
+		gtk_widget_set_visible (self->priv->query_editor,
+					!show_location_entry);
+	}
 }
 
 static gint
@@ -456,8 +463,8 @@ nautilus_toolbar_constructed (GObject *obj)
 	gtk_widget_show_all (GTK_WIDGET (back_forward));
 	gtk_widget_set_margin_right (GTK_WIDGET (back_forward), 12);
 
-	/* regular path bar */
-	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	/* box for regular search bar */
+	self->priv->bar_box = hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_widget_show (hbox);
 
 	/* entry-like location bar */
@@ -469,14 +476,6 @@ nautilus_toolbar_constructed (GObject *obj)
 	gtk_container_add (GTK_CONTAINER (tool_item), hbox);
 	gtk_container_add (GTK_CONTAINER (self->priv->toolbar), GTK_WIDGET (tool_item));
 	gtk_widget_show (GTK_WIDGET (tool_item));
-
-	/* search */
-	tool_item = gtk_tool_item_new ();
-	tool_button = toolbar_create_toolbutton (self, FALSE, TRUE, NAUTILUS_ACTION_SEARCH, NULL);
-	gtk_container_add (GTK_CONTAINER (tool_item), GTK_WIDGET (tool_button));
-	gtk_container_add (GTK_CONTAINER (self->priv->toolbar), GTK_WIDGET (tool_item));
-	gtk_widget_show_all (GTK_WIDGET (tool_item));
-	gtk_widget_set_margin_left (GTK_WIDGET (tool_item), 12);
 
 	/* View buttons */
 	tool_item = gtk_tool_item_new ();
@@ -618,6 +617,25 @@ GtkWidget *
 nautilus_toolbar_get_location_entry (NautilusToolbar *self)
 {
 	return self->priv->location_entry;
+}
+
+void
+nautilus_toolbar_set_query_editor (NautilusToolbar *self,
+				   GtkWidget       *query_editor)
+{
+	if (self->priv->query_editor != NULL)  {
+		gtk_container_remove (GTK_CONTAINER (self->priv->bar_box),
+				      self->priv->query_editor);
+		self->priv->query_editor = NULL;
+	}
+
+	if (query_editor != NULL) {
+		self->priv->query_editor = query_editor;
+		gtk_box_pack_start (GTK_BOX (self->priv->bar_box), query_editor,
+				    TRUE, TRUE, 0);
+	}
+
+	toolbar_update_appearance (self);
 }
 
 void

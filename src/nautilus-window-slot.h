@@ -97,6 +97,7 @@ char *         nautilus_window_slot_get_current_uri        (NautilusWindowSlot *
 GList * nautilus_window_slot_get_back_history              (NautilusWindowSlot *slot);
 GList * nautilus_window_slot_get_forward_history           (NautilusWindowSlot *slot);
 
+GtkWidget * nautilus_window_slot_get_query_editor          (NautilusWindowSlot *slot);
 GFile * nautilus_window_slot_get_query_editor_location     (NautilusWindowSlot *slot);
 void    nautilus_window_slot_set_search_visible            (NautilusWindowSlot *slot,
 							    gboolean            visible);
