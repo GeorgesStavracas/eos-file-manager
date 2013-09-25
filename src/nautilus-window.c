@@ -1101,6 +1101,27 @@ create_notebook (NautilusWindow *window)
 }
 
 static void
+create_path_bar_box (NautilusWindow *window)
+{
+	GtkWidget *box;
+
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	gtk_container_set_border_width (GTK_CONTAINER (box), 12);
+	gtk_box_pack_start (GTK_BOX (window->details->main_view), box,
+			    FALSE, FALSE, 0);
+
+	window->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
+	gtk_container_add (GTK_CONTAINER (box), window->details->path_bar);
+
+	g_signal_connect_object (window->details->path_bar, "path-clicked",
+				 G_CALLBACK (path_bar_location_changed_callback), window, 0);
+	g_signal_connect_object (window->details->path_bar, "path-event",
+				 G_CALLBACK (path_bar_path_event_callback), window, 0);
+
+	gtk_widget_show_all (box);
+}
+
+static void
 nautilus_window_constructed (GObject *self)
 {
 	NautilusWindow *window;
@@ -1154,16 +1175,7 @@ nautilus_window_constructed (GObject *self)
 	window->details->notebook = create_notebook (window);
 	nautilus_window_set_initial_window_geometry (window);
 
-	window->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
-	gtk_container_set_border_width (GTK_CONTAINER (window->details->path_bar), 12);
-	gtk_box_pack_start (GTK_BOX (window->details->main_view), window->details->path_bar,
-			    FALSE, FALSE, 0);
-	gtk_widget_show (window->details->path_bar);
-
-	g_signal_connect_object (window->details->path_bar, "path-clicked",
-				 G_CALLBACK (path_bar_location_changed_callback), window, 0);
-	g_signal_connect_object (window->details->path_bar, "path-event",
-				 G_CALLBACK (path_bar_path_event_callback), window, 0);
+	create_path_bar_box (window);
 
 	slot = nautilus_window_open_slot (window, 0);
 	nautilus_window_set_active_slot (window, slot);
