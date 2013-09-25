@@ -1404,6 +1404,9 @@ setup_button_type (ButtonData       *button_data,
 	} else if (nautilus_is_home_directory (location)) {
 		button_data->type = HOME_BUTTON;
 		button_data->is_root = TRUE;
+	} else if (nautilus_is_default_xdg_directory (location)) {
+		button_data->type = NORMAL_BUTTON;
+		button_data->is_root = TRUE;
 	} else if ((mount = nautilus_get_mounted_mount_for_root (location)) != NULL) {
 		button_data->dir_name = g_mount_get_name (mount);
 		button_data->type = MOUNT_BUTTON;
