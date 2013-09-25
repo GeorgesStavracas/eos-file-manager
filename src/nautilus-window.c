@@ -201,14 +201,24 @@ remember_focus_widget (NautilusWindow *window)
 	}
 }
 
-void
-nautilus_window_grab_focus (NautilusWindow *window)
+static NautilusView *
+nautilus_window_get_active_view (NautilusWindow *window)
 {
 	NautilusWindowSlot *slot;
 	NautilusView *view;
 
 	slot = nautilus_window_get_active_slot (window);
 	view = nautilus_window_slot_get_view (slot);
+
+	return view;
+}
+
+void
+nautilus_window_grab_focus (NautilusWindow *window)
+{
+	NautilusView *view;
+
+	view = nautilus_window_get_active_view (window);
 
 	if (view) {
 		nautilus_view_grab_focus (view);
@@ -760,8 +770,7 @@ path_bar_path_event_callback (NautilusPathBar *path_bar,
 			nautilus_window_slot_open_location (slot, location, flags);
 		}
 	} else if (event->button == 3) {
-		slot = nautilus_window_get_active_slot (window);
-		view = nautilus_window_slot_get_view (slot);
+		view = nautilus_window_get_active_view (window);
 		if (view != NULL) {
 			uri = g_file_get_uri (location);
 			nautilus_view_pop_up_location_context_menu (view, event, uri);
@@ -1506,15 +1515,12 @@ nautilus_window_key_press_event (GtkWidget *widget,
 				 GdkEventKey *event)
 {
 	NautilusWindow *window;
-	NautilusWindowSlot *active_slot;
 	NautilusView *view;
 	GtkWidget *focus_widget;
 	int i;
 
 	window = NAUTILUS_WINDOW (widget);
-
-	active_slot = nautilus_window_get_active_slot (window);
-	view =  nautilus_window_slot_get_view (active_slot);
+	view =  nautilus_window_get_active_view (window);
 
 	if (view != NULL && nautilus_view_get_is_renaming (view)) {
 		/* if we're renaming, just forward the event to the
@@ -1619,7 +1625,6 @@ nautilus_window_sync_title (NautilusWindow *window,
 void
 nautilus_window_sync_zoom_widgets (NautilusWindow *window)
 {
-	NautilusWindowSlot *slot;
 	NautilusView *view;
 	GtkActionGroup *action_group;
 	GtkAction *action;
@@ -1627,8 +1632,7 @@ nautilus_window_sync_zoom_widgets (NautilusWindow *window)
 	gboolean can_zoom, can_zoom_in, can_zoom_out;
 	NautilusZoomLevel zoom_level;
 
-	slot = nautilus_window_get_active_slot (window);
-	view = nautilus_window_slot_get_view (slot);
+	view = nautilus_window_get_active_view (window);
 
 	if (view != NULL) {
 		supports_zooming = nautilus_view_supports_zooming (view);
