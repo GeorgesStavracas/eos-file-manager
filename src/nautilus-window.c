@@ -1110,9 +1110,28 @@ create_notebook (NautilusWindow *window)
 }
 
 static void
+add_folder_button_clicked_cb (GtkButton *button,
+			      NautilusWindow *window)
+{
+	NautilusView *view;
+	GtkActionGroup *action_group;
+	GtkAction *action;
+
+	view = nautilus_window_get_active_view (window);
+	if (view == NULL) {
+		return;
+	}
+
+	action_group = nautilus_view_get_action_group (view);
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_NEW_FOLDER);
+	gtk_action_activate (action);
+}
+
+static void
 create_path_bar_box (NautilusWindow *window)
 {
-	GtkWidget *box;
+	GtkWidget *box, *child, *button;
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_container_set_border_width (GTK_CONTAINER (box), 12);
@@ -1120,12 +1139,27 @@ create_path_bar_box (NautilusWindow *window)
 			    FALSE, FALSE, 0);
 
 	window->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
+	gtk_widget_set_hexpand (window->details->path_bar, TRUE);
 	gtk_container_add (GTK_CONTAINER (box), window->details->path_bar);
 
 	g_signal_connect_object (window->details->path_bar, "path-clicked",
 				 G_CALLBACK (path_bar_location_changed_callback), window, 0);
 	g_signal_connect_object (window->details->path_bar, "path-event",
 				 G_CALLBACK (path_bar_path_event_callback), window, 0);
+
+	button = gtk_button_new ();
+	gtk_widget_set_halign (button, GTK_ALIGN_END);
+	gtk_container_add (GTK_CONTAINER (box), button);
+
+	child = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	gtk_container_add (GTK_CONTAINER (button), child);
+	gtk_container_add (GTK_CONTAINER (child),
+			   gtk_image_new_from_icon_name ("folder-symbolic", GTK_ICON_SIZE_MENU));
+	gtk_container_add (GTK_CONTAINER (child),
+			   gtk_label_new (_("Add Folder")));
+
+	g_signal_connect (button, "clicked",
+			  G_CALLBACK (add_folder_button_clicked_cb), window);
 
 	gtk_widget_show_all (box);
 }
