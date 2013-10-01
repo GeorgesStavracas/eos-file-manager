@@ -2808,9 +2808,6 @@ nautilus_view_finalize (GObject *object)
 					      sort_directories_first_changed_callback, view);
 	g_signal_handlers_disconnect_by_func (gtk_filechooser_preferences,
 					      show_hidden_files_changed_callback, view);
-	g_signal_handlers_disconnect_by_func (nautilus_window_state,
-					      nautilus_view_display_selection_info, view);
-
 	g_signal_handlers_disconnect_by_func (gnome_lockdown_preferences,
 					      schedule_update_menus, view);
 
