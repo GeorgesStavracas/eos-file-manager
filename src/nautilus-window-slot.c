@@ -618,8 +618,8 @@ create_path_bar_box (NautilusWindowSlot *slot)
 
 	slot->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
 	gtk_widget_set_hexpand (slot->details->path_bar, TRUE);
-	gtk_container_add (GTK_CONTAINER (slot->details->info_box),
-			   slot->details->path_bar);
+	gtk_box_pack_end (GTK_BOX (slot->details->info_box),
+			  slot->details->path_bar, FALSE, FALSE, 0);
 
 	g_signal_connect_object (slot->details->path_bar, "path-clicked",
 				 G_CALLBACK (path_bar_location_changed_callback), slot, 0);
@@ -2388,40 +2388,97 @@ view_status_changed_cb (NautilusView *view,
 			NautilusWindowSlot *slot)
 {
 
+	update_status_box (slot);
+}
+
+static GtkWidget *
+create_line (const gchar *markup_format,
+	     const gchar *title,
+	     const gchar *string)
+{
+	GtkWidget *ret;
+	gchar *str;
+
+	ret = NULL;
+
+	if (string == NULL) {
+		goto out;
+	}
+
+	if (title != NULL) {
+		str = g_strdup_printf (markup_format, title, string);
+	} else {
+		str = g_strdup_printf (markup_format, string);
+	}
+
+	ret = gtk_label_new (str);
+	gtk_label_set_use_markup (GTK_LABEL (ret), TRUE);
+	gtk_misc_set_alignment (GTK_MISC (ret), 0.0, 0.5);
+	g_free (str);
+
+ out:
+	return ret;
+}
+
+static GtkWidget *
+create_label_line (const gchar *title,
+		   const gchar *string)
+{
+	return create_line ("<span size='smaller'>%s %s</span>", title, string);
+}
+
+static GtkWidget *
+create_header_line (const gchar *string)
+{
+	return create_line ("<b>%s</b>", NULL, string);
+}
+
+static void
+update_status_box_for_selection (NautilusWindowSlot *slot)
+{
+	NautilusView *view;
 	GList *selection;
 	goffset non_folder_size;
 	gboolean non_folder_size_known;
-	guint non_folder_count, folder_count, folder_item_count;
 	gboolean folder_item_count_known;
-	guint file_item_count;
+	gboolean type_uniform;
+	guint non_folder_count, folder_count;
+	guint file_item_count, folder_item_count;
+	guint selection_count;
 	GList *p;
 	char *first_item_name;
-	char *non_folder_count_str;
-	char *non_folder_item_count_str;
-	char *folder_count_str;
-	char *folder_item_count_str;
-	char *primary_status;
-	char *detail_status;
+	char *header_str;
+	char *size_str;
+	char *type_str, *last_type_str;
+	char *date_str;
+	char *str;
 	NautilusFile *file;
+	GtkWidget *box, *w, *image;
+	GdkPixbuf *pixbuf;
 
-	update_status_box (slot);
-
+	view = nautilus_window_slot_get_current_view (slot);
 	selection = nautilus_view_get_selection (view);
-	
-	folder_item_count_known = TRUE;
+
+	selection_count = 0;
 	folder_count = 0;
+	folder_item_count_known = TRUE;
 	folder_item_count = 0;
+	file_item_count = 0;
 	non_folder_count = 0;
 	non_folder_size_known = FALSE;
 	non_folder_size = 0;
+	type_uniform = TRUE;
 	first_item_name = NULL;
-	folder_count_str = NULL;
-	folder_item_count_str = NULL;
-	non_folder_count_str = NULL;
-	non_folder_item_count_str = NULL;
+	header_str = NULL;
+	size_str = NULL;
+	type_str = NULL;
+	last_type_str = NULL;
+	date_str = NULL;
 	
 	for (p = selection; p != NULL; p = p->next) {
 		file = p->data;
+		selection_count++;
+
 		if (nautilus_file_is_directory (file)) {
 			folder_count++;
 			if (nautilus_file_get_directory_item_count (file, &file_item_count, NULL)) {
@@ -2437,121 +2494,102 @@ view_status_changed_cb (NautilusView *view,
 			}
 		}
 
-		if (first_item_name == NULL) {
-			first_item_name = nautilus_file_get_display_name (file);
-		}
-	}
-	
-	nautilus_file_list_free (selection);
-	
-	/* Break out cases for localization's sake. But note that there are still pieces
-	 * being assembled in a particular order, which may be a problem for some localizers.
-	 */
+		if (type_uniform) {
+			type_str = nautilus_file_get_string_attribute (file, "type");
 
-	if (folder_count != 0) {
-		if (folder_count == 1 && non_folder_count == 0) {
-			folder_count_str = g_strdup_printf (_("“%s” selected"), first_item_name);
-		} else {
-			folder_count_str = g_strdup_printf (ngettext("%'d folder selected", 
-								     "%'d folders selected", 
-								     folder_count), 
-							    folder_count);
-		}
+			if (last_type_str == NULL) {
+				last_type_str = g_strdup (type_str);
+			} else {
+				type_uniform = (g_strcmp0 (last_type_str, type_str) == 0);
+			}
 
-		if (folder_count == 1) {
-			if (!folder_item_count_known) {
-				folder_item_count_str = g_strdup ("");
-			} else {
-				folder_item_count_str = g_strdup_printf (ngettext("(containing %'d item)",
-										  "(containing %'d items)",
-										  folder_item_count), 
-									 folder_item_count);
-			}
-		}
-		else {
-			if (!folder_item_count_known) {
-				folder_item_count_str = g_strdup ("");
-			} else {
-				/* translators: this is preceded with a string of form 'N folders' (N more than 1) */
-				folder_item_count_str = g_strdup_printf (ngettext("(containing a total of %'d item)",
-										  "(containing a total of %'d items)",
-										  folder_item_count), 
-									 folder_item_count);
-			}
-			
+			g_free (type_str);
+			type_str = NULL;
 		}
 	}
 
-	if (non_folder_count != 0) {
-		if (folder_count == 0) {
-			if (non_folder_count == 1) {
-				non_folder_count_str = g_strdup_printf (_("“%s” selected"),
-									first_item_name);
-			} else {
-				non_folder_count_str = g_strdup_printf (ngettext("%'d item selected",
-										 "%'d items selected",
-										 non_folder_count),
-									non_folder_count);
-			}
-		} else {
-			/* Folders selected also, use "other" terminology */
-			non_folder_count_str = g_strdup_printf (ngettext("%'d other item selected",
-									 "%'d other items selected",
-									 non_folder_count),
-								non_folder_count);
-		}
-
-		if (non_folder_size_known) {
-			char *size_string;
-
-			size_string = g_format_size (non_folder_size);
-			/* This is marked for translation in case a localiser
-			 * needs to use something other than parentheses. The
-			 * the message in parentheses is the size of the selected items.
-			 */
-			non_folder_item_count_str = g_strdup_printf (_("(%s)"), size_string);
-			g_free (size_string);
-		} else {
-			non_folder_item_count_str = g_strdup ("");
-		}
+	if (folder_count == 0) {
+		folder_item_count_known = FALSE;
 	}
 
-	if (folder_count == 0 && non_folder_count == 0)	{
-		primary_status = NULL;
-		detail_status = NULL;
-	} else if (folder_count == 0) {
-		primary_status = g_strdup (non_folder_count_str);
-		detail_status = g_strdup (non_folder_item_count_str);
-	} else if (non_folder_count == 0) {
-		primary_status = g_strdup (folder_count_str);
-		detail_status  = g_strdup (folder_item_count_str);
+	if (non_folder_size_known && folder_item_count_known) {
+		str = g_format_size (non_folder_size);
+		size_str = g_strdup_printf (ngettext("%s and %'d item", 
+						     "%s and %'d items", 
+						     folder_item_count), 
+					    str, folder_item_count);
+		g_free (str);
+	} else if (folder_item_count_known) {
+		size_str = g_strdup_printf (ngettext("%'d item", 
+						     "%'d items", 
+						     folder_item_count), 
+					    folder_item_count);
+	} else if (non_folder_size_known) {
+		size_str = g_format_size (non_folder_size);
+	}
+
+	if (type_uniform) {
+		type_str = last_type_str;
+	}
+
+	if (selection_count == 1) {
+		file = selection->data;
+		header_str = nautilus_file_get_display_name (file);
+		date_str = nautilus_file_get_string_attribute (file, "date_modified");
+
+		pixbuf = nautilus_file_get_icon_pixbuf (file,
+							NAUTILUS_ICON_SIZE_LARGE,
+							TRUE,
+							NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
+		image = gtk_image_new_from_pixbuf (pixbuf);
+		g_object_unref (pixbuf);
 	} else {
-		/* This is marked for translation in case a localizer
-		 * needs to change ", " to something else. The comma
-		 * is between the message about the number of folders
-		 * and the number of items in those folders and the
-		 * message about the number of other items and the
-		 * total size of those items.
-		 */
-		primary_status = g_strdup_printf (_("%s %s, %s %s"),
-						  folder_count_str,
-						  folder_item_count_str,
-						  non_folder_count_str,
-						  non_folder_item_count_str);
-		detail_status = NULL;
+		header_str = g_strdup_printf (ngettext("%'d item", 
+						       "%'d items", 
+						       selection_count), 
+					      selection_count);
+
+		image = gtk_image_new_from_icon_name ("emblem-documents-symbolic", GTK_ICON_SIZE_DIALOG);
+		gtk_image_set_pixel_size (GTK_IMAGE (image), NAUTILUS_ICON_SIZE_LARGE);
 	}
 
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	gtk_container_add (GTK_CONTAINER (slot->details->info_box), box);
+
+	gtk_container_add (GTK_CONTAINER (box), image);
+	gtk_widget_show_all (box);
+
+	w = gtk_box_new (GTK_ORIENTATION_VERTICAL, 3);
+	gtk_container_add (GTK_CONTAINER (box), w);
+	box = w;
+
+	w = create_header_line (header_str);
+	if (w != NULL) {
+		gtk_container_add (GTK_CONTAINER (box), w);
+	}
+
+	w = create_label_line ((selection_count > 1) ? _("Total Size:") : _("Size:"), size_str);
+	if (w != NULL) {
+		gtk_container_add (GTK_CONTAINER (box), w);
+	}
+
+	w = create_label_line (_("Type:"), type_str);
+	if (w != NULL) {
+		gtk_container_add (GTK_CONTAINER (box), w);
+	}
+
+	w = create_label_line (_("Date:"), date_str);
+	if (w != NULL) {
+		gtk_container_add (GTK_CONTAINER (box), w);
+	}
+
+	gtk_widget_show_all (box);
+
+	g_free (header_str);
+	g_free (size_str);
+	g_free (type_str);
+	g_free (date_str);
 	g_free (first_item_name);
-	g_free (folder_count_str);
-	g_free (folder_item_count_str);
-	g_free (non_folder_count_str);
-	g_free (non_folder_item_count_str);
-
-	nautilus_window_slot_set_status (slot,
-					 primary_status, detail_status);
-
-	g_free (primary_status);
-	g_free (detail_status);
 }
 
 static void
@@ -2603,6 +2641,8 @@ update_status_box (NautilusWindowSlot *slot)
 	if (view == NULL ||
 	    nautilus_view_get_selection_count (view) == 0) {
 		update_status_box_for_empty_selection (slot);
+	} else {
+		update_status_box_for_selection (slot);
 	}
 }
 
