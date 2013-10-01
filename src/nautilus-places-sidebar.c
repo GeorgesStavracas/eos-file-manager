@@ -241,7 +241,7 @@ add_expander (SidebarTreeData *data,
 
 static void
 check_separator_for_section (SidebarTreeData *data,
-			   SectionType section_type)
+			     SectionType section_type)
 {
 	switch (section_type) {
 	case SECTION_DEVICES:
@@ -1522,7 +1522,7 @@ drag_data_received_callback (GtkWidget *widget,
 		}
 	}
 
-out:
+ out:
 	sidebar->drop_occured = FALSE;
 	free_drag_data (sidebar);
 	gtk_drag_finish (context, success, FALSE, time);
@@ -1684,7 +1684,7 @@ bookmarks_check_popup_sensitivity (NautilusPlacesSidebar *sidebar)
 	 */
 
 	show_empty_trash = (uri != NULL) &&
-			   (!strcmp (uri, "trash:///"));
+		(!strcmp (uri, "trash:///"));
 
 	/* Only show properties for local mounts */
 	show_properties = (mount != NULL);
@@ -1699,7 +1699,7 @@ bookmarks_check_popup_sensitivity (NautilusPlacesSidebar *sidebar)
 	}
 
 	gtk_widget_set_visible (sidebar->popup_menu_separator_item,
-		      show_mount || show_unmount || show_eject || show_empty_trash);
+				show_mount || show_unmount || show_eject || show_empty_trash);
 	gtk_widget_set_visible (sidebar->popup_menu_mount_item, show_mount);
 	gtk_widget_set_visible (sidebar->popup_menu_unmount_item, show_unmount);
 	gtk_widget_set_visible (sidebar->popup_menu_eject_item, show_eject);
@@ -2002,7 +2002,7 @@ open_shortcut_in_new_window_cb (GtkMenuItem	      *item,
 
 static void
 open_shortcut_in_new_tab_cb (GtkMenuItem	      *item,
-				NautilusPlacesSidebar *sidebar)
+			     NautilusPlacesSidebar *sidebar)
 {
 	open_shortcut_from_menu (sidebar, NAUTILUS_WINDOW_OPEN_FLAG_NEW_TAB);
 }
@@ -2074,7 +2074,7 @@ rename_selected_bookmark (NautilusPlacesSidebar *sidebar)
 		g_list_free (renderers);
 		g_object_set (cell, "editable", TRUE, NULL);
 		gtk_tree_view_set_cursor_on_cell (GTK_TREE_VIEW (data->tree_view),
-						path, column, cell, TRUE);
+						  path, column, cell, TRUE);
 		gtk_tree_path_free (path);
 	}
 }
@@ -2254,7 +2254,7 @@ drive_eject_cb (GObject *source_object,
 			g_free (name);
 			eel_show_error_dialog (primary,
 					       error->message,
-				       NULL);
+					       NULL);
 			g_free (primary);
 		}
 		g_error_free (error);
@@ -2263,8 +2263,8 @@ drive_eject_cb (GObject *source_object,
 
 static void
 volume_eject_cb (GObject *source_object,
-		GAsyncResult *res,
-		gpointer user_data)
+		 GAsyncResult *res,
+		 gpointer user_data)
 {
 	NautilusWindow *window;
 	GError *error;
@@ -2330,7 +2330,7 @@ do_eject (GMount *mount,
 					      g_object_ref (sidebar->window));
 	} else if (volume != NULL) {
 		g_volume_eject_with_operation (volume, 0, mount_op, NULL, volume_eject_cb,
-					      g_object_ref (sidebar->window));
+					       g_object_ref (sidebar->window));
 	} else if (drive != NULL) {
 		g_drive_eject_with_operation (drive, 0, mount_op, NULL, drive_eject_cb,
 					      g_object_ref (sidebar->window));
@@ -2757,70 +2757,70 @@ bookmarks_key_press_event_cb (GtkWidget             *widget,
 			      GdkEventKey           *event,
 			      SidebarTreeData       *data)
 {
-  guint modifiers;
-  GtkTreeIter selected_iter;
-  GtkTreePath *path;
-  NautilusPlacesSidebar *sidebar = data->sidebar;
+	guint modifiers;
+	GtkTreeIter selected_iter;
+	GtkTreePath *path;
+	NautilusPlacesSidebar *sidebar = data->sidebar;
 
-  if (!get_selected_iter (sidebar, &selected_iter, NULL)) {
-	  return FALSE;
-  }
+	if (!get_selected_iter (sidebar, &selected_iter, NULL)) {
+		return FALSE;
+	}
 
-  modifiers = gtk_accelerator_get_default_mod_mask ();
+	modifiers = gtk_accelerator_get_default_mod_mask ();
 
-  if ((event->keyval == GDK_KEY_Return ||
-       event->keyval == GDK_KEY_KP_Enter ||
-       event->keyval == GDK_KEY_ISO_Enter ||
-       event->keyval == GDK_KEY_space)) {
-      NautilusWindowOpenFlags flags = 0;
+	if ((event->keyval == GDK_KEY_Return ||
+	     event->keyval == GDK_KEY_KP_Enter ||
+	     event->keyval == GDK_KEY_ISO_Enter ||
+	     event->keyval == GDK_KEY_space)) {
+		NautilusWindowOpenFlags flags = 0;
 
-      if ((event->state & modifiers) == GDK_SHIFT_MASK) {
-          flags = NAUTILUS_WINDOW_OPEN_FLAG_NEW_TAB;
-      } else if ((event->state & modifiers) == GDK_CONTROL_MASK) {
-          flags = NAUTILUS_WINDOW_OPEN_FLAG_NEW_WINDOW;
-      }
+		if ((event->state & modifiers) == GDK_SHIFT_MASK) {
+			flags = NAUTILUS_WINDOW_OPEN_FLAG_NEW_TAB;
+		} else if ((event->state & modifiers) == GDK_CONTROL_MASK) {
+			flags = NAUTILUS_WINDOW_OPEN_FLAG_NEW_WINDOW;
+		}
 
-      open_selected_bookmark (data, &selected_iter, flags);
-      return TRUE;
-  }
+		open_selected_bookmark (data, &selected_iter, flags);
+		return TRUE;
+	}
 
-  if (event->keyval == GDK_KEY_Down &&
-      (event->state & modifiers) == GDK_MOD1_MASK) {
-      return eject_or_unmount_selection (data);
-  }
+	if (event->keyval == GDK_KEY_Down &&
+	    (event->state & modifiers) == GDK_MOD1_MASK) {
+		return eject_or_unmount_selection (data);
+	}
 
-  if (event->keyval == GDK_KEY_Up) {
-	  if (find_prev_row (data, &selected_iter)) {
-	      path = gtk_tree_model_get_path (GTK_TREE_MODEL (data->store), &selected_iter);
-	      gtk_tree_view_set_cursor (data->tree_view, path, NULL, FALSE);
-	      gtk_tree_path_free (path);
-      }
-      return TRUE;
-  }
+	if (event->keyval == GDK_KEY_Up) {
+		if (find_prev_row (data, &selected_iter)) {
+			path = gtk_tree_model_get_path (GTK_TREE_MODEL (data->store), &selected_iter);
+			gtk_tree_view_set_cursor (data->tree_view, path, NULL, FALSE);
+			gtk_tree_path_free (path);
+		}
+		return TRUE;
+	}
 
-  if (event->keyval == GDK_KEY_Down) {
-	  if (find_next_row (data, &selected_iter)) {
-		  path = gtk_tree_model_get_path (GTK_TREE_MODEL (data->store), &selected_iter);
-		  gtk_tree_view_set_cursor (data->tree_view, path, NULL, FALSE);
-		  gtk_tree_path_free (path);
-	  }
-	  return TRUE;
-  }
+	if (event->keyval == GDK_KEY_Down) {
+		if (find_next_row (data, &selected_iter)) {
+			path = gtk_tree_model_get_path (GTK_TREE_MODEL (data->store), &selected_iter);
+			gtk_tree_view_set_cursor (data->tree_view, path, NULL, FALSE);
+			gtk_tree_path_free (path);
+		}
+		return TRUE;
+	}
 
-  if ((event->keyval == GDK_KEY_Delete
-      || event->keyval == GDK_KEY_KP_Delete)
-      && (event->state & modifiers) == 0) {
-      remove_selected_bookmarks (sidebar);
-      return TRUE;
-  }
+	if ((event->keyval == GDK_KEY_Delete
+	     || event->keyval == GDK_KEY_KP_Delete)
+	    && (event->state & modifiers) == 0) {
+		remove_selected_bookmarks (sidebar);
+		return TRUE;
+	}
 
-  if ((event->keyval == GDK_KEY_F2)
-      && (event->state & modifiers) == 0) {
-      rename_selected_bookmark (sidebar);
-      return TRUE;
-  }
+	if ((event->keyval == GDK_KEY_F2)
+	    && (event->state & modifiers) == 0) {
+		rename_selected_bookmark (sidebar);
+		return TRUE;
+	}
 
-  return FALSE;
+	return FALSE;
 }
 
 /* Constructs the popup menu for the file list if needed */
@@ -2870,16 +2870,16 @@ bookmarks_build_popup_menu (NautilusPlacesSidebar *sidebar)
 	item = gtk_image_menu_item_new_with_label (_("Remove"));
 	sidebar->popup_menu_remove_item = item;
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-				 gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_MENU));
+				       gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_MENU));
 	g_signal_connect (item, "activate",
-		    G_CALLBACK (remove_shortcut_cb), sidebar);
+			  G_CALLBACK (remove_shortcut_cb), sidebar);
 	gtk_widget_show (item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (sidebar->popup_menu), item);
 	
 	item = gtk_menu_item_new_with_label (_("Rename…"));
 	sidebar->popup_menu_rename_item = item;
 	g_signal_connect (item, "activate",
-		    G_CALLBACK (rename_shortcut_cb), sidebar);
+			  G_CALLBACK (rename_shortcut_cb), sidebar);
 	gtk_widget_show (item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (sidebar->popup_menu), item);
 	
@@ -2891,28 +2891,28 @@ bookmarks_build_popup_menu (NautilusPlacesSidebar *sidebar)
 	item = gtk_menu_item_new_with_mnemonic (_("_Mount"));
 	sidebar->popup_menu_mount_item = item;
 	g_signal_connect (item, "activate",
-		    G_CALLBACK (mount_shortcut_cb), sidebar);
+			  G_CALLBACK (mount_shortcut_cb), sidebar);
 	gtk_widget_show (item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (sidebar->popup_menu), item);
 
 	item = gtk_menu_item_new_with_mnemonic (_("_Unmount"));
 	sidebar->popup_menu_unmount_item = item;
 	g_signal_connect (item, "activate",
-		    G_CALLBACK (unmount_shortcut_cb), sidebar);
+			  G_CALLBACK (unmount_shortcut_cb), sidebar);
 	gtk_widget_show (item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (sidebar->popup_menu), item);
 
 	item = gtk_menu_item_new_with_mnemonic (_("_Eject"));
 	sidebar->popup_menu_eject_item = item;
 	g_signal_connect (item, "activate",
-		    G_CALLBACK (eject_shortcut_cb), sidebar);
+			  G_CALLBACK (eject_shortcut_cb), sidebar);
 	gtk_widget_show (item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (sidebar->popup_menu), item);
 
 	item = gtk_menu_item_new_with_mnemonic (_("_Detect Media"));
 	sidebar->popup_menu_rescan_item = item;
 	g_signal_connect (item, "activate",
-		    G_CALLBACK (rescan_shortcut_cb), sidebar);
+			  G_CALLBACK (rescan_shortcut_cb), sidebar);
 	gtk_widget_show (item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (sidebar->popup_menu), item);
 
@@ -2941,7 +2941,7 @@ bookmarks_build_popup_menu (NautilusPlacesSidebar *sidebar)
 	item = gtk_menu_item_new_with_mnemonic (_("Empty _Trash"));
 	sidebar->popup_menu_empty_trash_item = item;
 	g_signal_connect (item, "activate",
-		    G_CALLBACK (empty_trash_cb), sidebar);
+			  G_CALLBACK (empty_trash_cb), sidebar);
 	gtk_widget_show (item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (sidebar->popup_menu), item);
 
@@ -3155,19 +3155,19 @@ places_sidebar_selection_func (GtkTreeSelection *selection,
 			       gboolean path_currently_selected,
 			       gpointer user_data)
 {
-       GtkTreeIter iter;
-       PlaceType row_type;
+	GtkTreeIter iter;
+	PlaceType row_type;
 
-       gtk_tree_model_get_iter (model, &iter, path);
-       gtk_tree_model_get (model, &iter,
-                           PLACES_SIDEBAR_COLUMN_ROW_TYPE, &row_type,
-                           -1);
+	gtk_tree_model_get_iter (model, &iter, path);
+	gtk_tree_model_get (model, &iter,
+			    PLACES_SIDEBAR_COLUMN_ROW_TYPE, &row_type,
+			    -1);
 
-       if (row_type == PLACES_EXPANDER) {
-               return FALSE;
-       }
+	if (row_type == PLACES_EXPANDER) {
+		return FALSE;
+	}
 
-       return TRUE;
+	return TRUE;
 }
 
 static gboolean
