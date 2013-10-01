@@ -9446,6 +9446,12 @@ nautilus_view_get_uri (NautilusView *view)
 	return nautilus_directory_get_uri (view->details->model);
 }
 
+GtkActionGroup *
+nautilus_view_get_action_group (NautilusView *view)
+{
+	return view->details->dir_action_group;
+}
+
 void
 nautilus_view_move_copy_items (NautilusView *view,
 			       const GList *item_uris,

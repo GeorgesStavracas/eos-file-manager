@@ -33,6 +33,8 @@
 #include <libnautilus-private/nautilus-icon-names.h>
 #include <libnautilus-private/nautilus-trash-monitor.h>
 
+#include "nautilus-application.h"
+#include "nautilus-bookmark-list.h"
 #include "nautilus-window-slot-dnd.h"
 
 enum {
@@ -1398,11 +1400,21 @@ setup_button_type (ButtonData       *button_data,
 		   GFile *location)
 {
 	GMount *mount;
+	NautilusBookmarkList *bookmarks;
+
+	bookmarks = nautilus_application_get_bookmarks
+		(NAUTILUS_APPLICATION (g_application_get_default ()));
 
 	if (nautilus_is_root_directory (location)) {
 		button_data->type = ROOT_BUTTON;
 	} else if (nautilus_is_home_directory (location)) {
 		button_data->type = HOME_BUTTON;
+		button_data->is_root = TRUE;
+	} else if (nautilus_is_default_xdg_directory (location)) {
+		button_data->type = NORMAL_BUTTON;
+		button_data->is_root = TRUE;
+	} else if (nautilus_bookmark_list_item_with_location (bookmarks, location, NULL)) {
+		button_data->type = NORMAL_BUTTON;
 		button_data->is_root = TRUE;
 	} else if ((mount = nautilus_get_mounted_mount_for_root (location)) != NULL) {
 		button_data->dir_name = g_mount_get_name (mount);

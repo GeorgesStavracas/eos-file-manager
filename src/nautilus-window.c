@@ -72,6 +72,8 @@
 
 /* dock items */
 #define MAX_TITLE_LENGTH 180
+#define PATH_BAR_BOX_SPACING 6
+#define PATH_BAR_BOX_BORDER 12
 
 /* Forward and back buttons on the mouse */
 static gboolean mouse_extra_buttons = TRUE;
@@ -201,14 +203,24 @@ remember_focus_widget (NautilusWindow *window)
 	}
 }
 
-void
-nautilus_window_grab_focus (NautilusWindow *window)
+static NautilusView *
+nautilus_window_get_active_view (NautilusWindow *window)
 {
 	NautilusWindowSlot *slot;
 	NautilusView *view;
 
 	slot = nautilus_window_get_active_slot (window);
 	view = nautilus_window_slot_get_view (slot);
+
+	return view;
+}
+
+void
+nautilus_window_grab_focus (NautilusWindow *window)
+{
+	NautilusView *view;
+
+	view = nautilus_window_get_active_view (window);
 
 	if (view) {
 		nautilus_view_grab_focus (view);
@@ -760,8 +772,7 @@ path_bar_path_event_callback (NautilusPathBar *path_bar,
 			nautilus_window_slot_open_location (slot, location, flags);
 		}
 	} else if (event->button == 3) {
-		slot = nautilus_window_get_active_slot (window);
-		view = nautilus_window_slot_get_view (slot);
+		view = nautilus_window_get_active_view (window);
 		if (view != NULL) {
 			uri = g_file_get_uri (location);
 			nautilus_view_pop_up_location_context_menu (view, event, uri);
@@ -1101,6 +1112,61 @@ create_notebook (NautilusWindow *window)
 }
 
 static void
+add_folder_button_clicked_cb (GtkButton *button,
+			      NautilusWindow *window)
+{
+	NautilusView *view;
+	GtkActionGroup *action_group;
+	GtkAction *action;
+
+	view = nautilus_window_get_active_view (window);
+	if (view == NULL) {
+		return;
+	}
+
+	action_group = nautilus_view_get_action_group (view);
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_NEW_FOLDER);
+	gtk_action_activate (action);
+}
+
+static void
+create_path_bar_box (NautilusWindow *window)
+{
+	GtkWidget *box, *child, *button;
+
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, PATH_BAR_BOX_SPACING);
+	gtk_container_set_border_width (GTK_CONTAINER (box), PATH_BAR_BOX_BORDER);
+	gtk_box_pack_start (GTK_BOX (window->details->main_view), box,
+			    FALSE, FALSE, 0);
+
+	window->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
+	gtk_widget_set_hexpand (window->details->path_bar, TRUE);
+	gtk_container_add (GTK_CONTAINER (box), window->details->path_bar);
+
+	g_signal_connect_object (window->details->path_bar, "path-clicked",
+				 G_CALLBACK (path_bar_location_changed_callback), window, 0);
+	g_signal_connect_object (window->details->path_bar, "path-event",
+				 G_CALLBACK (path_bar_path_event_callback), window, 0);
+
+	button = gtk_button_new ();
+	gtk_widget_set_halign (button, GTK_ALIGN_END);
+	gtk_container_add (GTK_CONTAINER (box), button);
+
+	child = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, PATH_BAR_BOX_SPACING);
+	gtk_container_add (GTK_CONTAINER (button), child);
+	gtk_container_add (GTK_CONTAINER (child),
+			   gtk_image_new_from_icon_name ("folder-symbolic", GTK_ICON_SIZE_MENU));
+	gtk_container_add (GTK_CONTAINER (child),
+			   gtk_label_new (_("Add Folder")));
+
+	g_signal_connect (button, "clicked",
+			  G_CALLBACK (add_folder_button_clicked_cb), window);
+
+	gtk_widget_show_all (box);
+}
+
+static void
 nautilus_window_constructed (GObject *self)
 {
 	NautilusWindow *window;
@@ -1154,16 +1220,7 @@ nautilus_window_constructed (GObject *self)
 	window->details->notebook = create_notebook (window);
 	nautilus_window_set_initial_window_geometry (window);
 
-	window->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
-	gtk_container_set_border_width (GTK_CONTAINER (window->details->path_bar), 12);
-	gtk_box_pack_start (GTK_BOX (window->details->main_view), window->details->path_bar,
-			    FALSE, FALSE, 0);
-	gtk_widget_show (window->details->path_bar);
-
-	g_signal_connect_object (window->details->path_bar, "path-clicked",
-				 G_CALLBACK (path_bar_location_changed_callback), window, 0);
-	g_signal_connect_object (window->details->path_bar, "path-event",
-				 G_CALLBACK (path_bar_path_event_callback), window, 0);
+	create_path_bar_box (window);
 
 	slot = nautilus_window_open_slot (window, 0);
 	nautilus_window_set_active_slot (window, slot);
@@ -1494,15 +1551,12 @@ nautilus_window_key_press_event (GtkWidget *widget,
 				 GdkEventKey *event)
 {
 	NautilusWindow *window;
-	NautilusWindowSlot *active_slot;
 	NautilusView *view;
 	GtkWidget *focus_widget;
 	int i;
 
 	window = NAUTILUS_WINDOW (widget);
-
-	active_slot = nautilus_window_get_active_slot (window);
-	view =  nautilus_window_slot_get_view (active_slot);
+	view =  nautilus_window_get_active_view (window);
 
 	if (view != NULL && nautilus_view_get_is_renaming (view)) {
 		/* if we're renaming, just forward the event to the
@@ -1607,7 +1661,6 @@ nautilus_window_sync_title (NautilusWindow *window,
 void
 nautilus_window_sync_zoom_widgets (NautilusWindow *window)
 {
-	NautilusWindowSlot *slot;
 	NautilusView *view;
 	GtkActionGroup *action_group;
 	GtkAction *action;
@@ -1615,8 +1668,7 @@ nautilus_window_sync_zoom_widgets (NautilusWindow *window)
 	gboolean can_zoom, can_zoom_in, can_zoom_out;
 	NautilusZoomLevel zoom_level;
 
-	slot = nautilus_window_get_active_slot (window);
-	view = nautilus_window_slot_get_view (slot);
+	view = nautilus_window_get_active_view (window);
 
 	if (view != NULL) {
 		supports_zooming = nautilus_view_supports_zooming (view);
