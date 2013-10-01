@@ -37,6 +37,9 @@
 #include <glib/gi18n.h>
 #include <math.h>
 
+#define TOOLBAR_BUTTON_MARGIN 12
+#define TOOLBAR_BOX_SPACING 6
+
 typedef enum {
 	NAUTILUS_NAVIGATION_DIRECTION_NONE,
 	NAUTILUS_NAVIGATION_DIRECTION_BACK,
@@ -439,7 +442,7 @@ nautilus_toolbar_constructed (GObject *obj)
 
 	/* Back and Forward */
 	back_forward = gtk_tool_item_new ();
-	gtk_widget_set_margin_right (GTK_WIDGET (back_forward), 12);
+	gtk_widget_set_margin_right (GTK_WIDGET (back_forward), TOOLBAR_BUTTON_MARGIN);
 	gtk_size_group_add_widget (horizontal_size_group, GTK_WIDGET (back_forward));
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
@@ -480,10 +483,10 @@ nautilus_toolbar_constructed (GObject *obj)
 	/* Right box */
 	tool_item = gtk_tool_item_new ();
 	gtk_size_group_add_widget (horizontal_size_group, GTK_WIDGET (tool_item));
-	gtk_widget_set_margin_left (GTK_WIDGET (tool_item), 12);
+	gtk_widget_set_margin_left (GTK_WIDGET (tool_item), TOOLBAR_BUTTON_MARGIN);
 	gtk_container_add (GTK_CONTAINER (toolbar), GTK_WIDGET (tool_item));
 
-	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, TOOLBAR_BOX_SPACING);
 	gtk_container_add (GTK_CONTAINER (tool_item), hbox);
 
 	/* View buttons */
