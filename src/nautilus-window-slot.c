@@ -134,6 +134,7 @@ static void nautilus_window_slot_force_reload (NautilusWindowSlot *slot);
 static void location_has_really_changed (NautilusWindowSlot *slot);
 static void nautilus_window_slot_connect_new_content_view (NautilusWindowSlot *slot);
 static void nautilus_window_slot_emit_location_change (NautilusWindowSlot *slot, GFile *from, GFile *to);
+static void nautilus_window_slot_set_status (NautilusWindowSlot *slot, const char *primary_status, const char *detail_status);
 
 static void
 nautilus_window_slot_sync_search_widgets (NautilusWindowSlot *slot)
@@ -2244,6 +2245,175 @@ view_begin_loading_cb (NautilusView       *view,
 }
 
 static void
+view_status_changed_cb (NautilusView *view,
+			NautilusWindowSlot *slot)
+{
+
+	GList *selection;
+	goffset non_folder_size;
+	gboolean non_folder_size_known;
+	guint non_folder_count, folder_count, folder_item_count;
+	gboolean folder_item_count_known;
+	guint file_item_count;
+	GList *p;
+	char *first_item_name;
+	char *non_folder_count_str;
+	char *non_folder_item_count_str;
+	char *folder_count_str;
+	char *folder_item_count_str;
+	char *primary_status;
+	char *detail_status;
+	NautilusFile *file;
+
+	selection = nautilus_view_get_selection (view);
+	
+	folder_item_count_known = TRUE;
+	folder_count = 0;
+	folder_item_count = 0;
+	non_folder_count = 0;
+	non_folder_size_known = FALSE;
+	non_folder_size = 0;
+	first_item_name = NULL;
+	folder_count_str = NULL;
+	folder_item_count_str = NULL;
+	non_folder_count_str = NULL;
+	non_folder_item_count_str = NULL;
+	
+	for (p = selection; p != NULL; p = p->next) {
+		file = p->data;
+		if (nautilus_file_is_directory (file)) {
+			folder_count++;
+			if (nautilus_file_get_directory_item_count (file, &file_item_count, NULL)) {
+				folder_item_count += file_item_count;
+			} else {
+				folder_item_count_known = FALSE;
+			}
+		} else {
+			non_folder_count++;
+			if (!nautilus_file_can_get_size (file)) {
+				non_folder_size_known = TRUE;
+				non_folder_size += nautilus_file_get_size (file);
+			}
+		}
+
+		if (first_item_name == NULL) {
+			first_item_name = nautilus_file_get_display_name (file);
+		}
+	}
+	
+	nautilus_file_list_free (selection);
+	
+	/* Break out cases for localization's sake. But note that there are still pieces
+	 * being assembled in a particular order, which may be a problem for some localizers.
+	 */
+
+	if (folder_count != 0) {
+		if (folder_count == 1 && non_folder_count == 0) {
+			folder_count_str = g_strdup_printf (_("“%s” selected"), first_item_name);
+		} else {
+			folder_count_str = g_strdup_printf (ngettext("%'d folder selected", 
+								     "%'d folders selected", 
+								     folder_count), 
+							    folder_count);
+		}
+
+		if (folder_count == 1) {
+			if (!folder_item_count_known) {
+				folder_item_count_str = g_strdup ("");
+			} else {
+				folder_item_count_str = g_strdup_printf (ngettext("(containing %'d item)",
+										  "(containing %'d items)",
+										  folder_item_count), 
+									 folder_item_count);
+			}
+		}
+		else {
+			if (!folder_item_count_known) {
+				folder_item_count_str = g_strdup ("");
+			} else {
+				/* translators: this is preceded with a string of form 'N folders' (N more than 1) */
+				folder_item_count_str = g_strdup_printf (ngettext("(containing a total of %'d item)",
+										  "(containing a total of %'d items)",
+										  folder_item_count), 
+									 folder_item_count);
+			}
+			
+		}
+	}
+
+	if (non_folder_count != 0) {
+		if (folder_count == 0) {
+			if (non_folder_count == 1) {
+				non_folder_count_str = g_strdup_printf (_("“%s” selected"),
+									first_item_name);
+			} else {
+				non_folder_count_str = g_strdup_printf (ngettext("%'d item selected",
+										 "%'d items selected",
+										 non_folder_count),
+									non_folder_count);
+			}
+		} else {
+			/* Folders selected also, use "other" terminology */
+			non_folder_count_str = g_strdup_printf (ngettext("%'d other item selected",
+									 "%'d other items selected",
+									 non_folder_count),
+								non_folder_count);
+		}
+
+		if (non_folder_size_known) {
+			char *size_string;
+
+			size_string = g_format_size (non_folder_size);
+			/* This is marked for translation in case a localiser
+			 * needs to use something other than parentheses. The
+			 * the message in parentheses is the size of the selected items.
+			 */
+			non_folder_item_count_str = g_strdup_printf (_("(%s)"), size_string);
+			g_free (size_string);
+		} else {
+			non_folder_item_count_str = g_strdup ("");
+		}
+	}
+
+	if (folder_count == 0 && non_folder_count == 0)	{
+		primary_status = NULL;
+		detail_status = NULL;
+	} else if (folder_count == 0) {
+		primary_status = g_strdup (non_folder_count_str);
+		detail_status = g_strdup (non_folder_item_count_str);
+	} else if (non_folder_count == 0) {
+		primary_status = g_strdup (folder_count_str);
+		detail_status  = g_strdup (folder_item_count_str);
+	} else {
+		/* This is marked for translation in case a localizer
+		 * needs to change ", " to something else. The comma
+		 * is between the message about the number of folders
+		 * and the number of items in those folders and the
+		 * message about the number of other items and the
+		 * total size of those items.
+		 */
+		primary_status = g_strdup_printf (_("%s %s, %s %s"),
+						  folder_count_str,
+						  folder_item_count_str,
+						  non_folder_count_str,
+						  non_folder_item_count_str);
+		detail_status = NULL;
+	}
+
+	g_free (first_item_name);
+	g_free (folder_count_str);
+	g_free (folder_item_count_str);
+	g_free (non_folder_count_str);
+	g_free (non_folder_item_count_str);
+
+	nautilus_window_slot_set_status (slot,
+					 primary_status, detail_status);
+
+	g_free (primary_status);
+	g_free (detail_status);
+}
+
+static void
 nautilus_window_slot_connect_new_content_view (NautilusWindowSlot *slot)
 {
 	if (slot->details->content_view != NULL) {
@@ -2255,6 +2425,7 @@ nautilus_window_slot_connect_new_content_view (NautilusWindowSlot *slot)
 	if (slot->details->new_content_view != NULL) {
 		g_signal_connect (slot->details->new_content_view, "begin-loading", G_CALLBACK (view_begin_loading_cb), slot);
 		g_signal_connect (slot->details->new_content_view, "end-loading", G_CALLBACK (view_end_loading_cb), slot);
+		g_signal_connect (slot->details->new_content_view, "status-changed", G_CALLBACK (view_status_changed_cb), slot);
 	}
 }
 
@@ -2672,7 +2843,7 @@ set_floating_bar_status (NautilusWindowSlot *slot,
 				    set_status_data_free);
 }
 
-void
+static void
 nautilus_window_slot_set_status (NautilusWindowSlot *slot,
 				 const char *primary_status,
 				 const char *detail_status)

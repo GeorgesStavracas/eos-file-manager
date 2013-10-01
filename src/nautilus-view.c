@@ -143,6 +143,7 @@ enum {
 	REMOVE_FILE,
 	ZOOM_LEVEL_CHANGED,
 	SELECTION_CHANGED,
+	STATUS_CHANGED,
 	TRASH,
 	DELETE,
 	LAST_SIGNAL
@@ -2821,180 +2822,10 @@ nautilus_view_finalize (GObject *object)
 	G_OBJECT_CLASS (nautilus_view_parent_class)->finalize (object);
 }
 
-/**
- * nautilus_view_display_selection_info:
- *
- * Display information about the current selection, and notify the view frame of the changed selection.
- * @view: NautilusView for which to display selection info.
- *
- **/
-void
-nautilus_view_display_selection_info (NautilusView *view)
+static void
+nautilus_view_send_status_change (NautilusView *view)
 {
-	GList *selection;
-	goffset non_folder_size;
-	gboolean non_folder_size_known;
-	guint non_folder_count, folder_count, folder_item_count;
-	gboolean folder_item_count_known;
-	guint file_item_count;
-	GList *p;
-	char *first_item_name;
-	char *non_folder_count_str;
-	char *non_folder_item_count_str;
-	char *folder_count_str;
-	char *folder_item_count_str;
-	char *primary_status;
-	char *detail_status;
-	NautilusFile *file;
-
-	g_return_if_fail (NAUTILUS_IS_VIEW (view));
-
-	selection = nautilus_view_get_selection (view);
-	
-	folder_item_count_known = TRUE;
-	folder_count = 0;
-	folder_item_count = 0;
-	non_folder_count = 0;
-	non_folder_size_known = FALSE;
-	non_folder_size = 0;
-	first_item_name = NULL;
-	folder_count_str = NULL;
-	folder_item_count_str = NULL;
-	non_folder_count_str = NULL;
-	non_folder_item_count_str = NULL;
-	
-	for (p = selection; p != NULL; p = p->next) {
-		file = p->data;
-		if (nautilus_file_is_directory (file)) {
-			folder_count++;
-			if (nautilus_file_get_directory_item_count (file, &file_item_count, NULL)) {
-				folder_item_count += file_item_count;
-			} else {
-				folder_item_count_known = FALSE;
-			}
-		} else {
-			non_folder_count++;
-			if (!nautilus_file_can_get_size (file)) {
-				non_folder_size_known = TRUE;
-				non_folder_size += nautilus_file_get_size (file);
-			}
-		}
-
-		if (first_item_name == NULL) {
-			first_item_name = nautilus_file_get_display_name (file);
-		}
-	}
-	
-	nautilus_file_list_free (selection);
-	
-	/* Break out cases for localization's sake. But note that there are still pieces
-	 * being assembled in a particular order, which may be a problem for some localizers.
-	 */
-
-	if (folder_count != 0) {
-		if (folder_count == 1 && non_folder_count == 0) {
-			folder_count_str = g_strdup_printf (_("“%s” selected"), first_item_name);
-		} else {
-			folder_count_str = g_strdup_printf (ngettext("%'d folder selected", 
-								     "%'d folders selected", 
-								     folder_count), 
-							    folder_count);
-		}
-
-		if (folder_count == 1) {
-			if (!folder_item_count_known) {
-				folder_item_count_str = g_strdup ("");
-			} else {
-				folder_item_count_str = g_strdup_printf (ngettext("(containing %'d item)",
-										  "(containing %'d items)",
-										  folder_item_count), 
-									 folder_item_count);
-			}
-		}
-		else {
-			if (!folder_item_count_known) {
-				folder_item_count_str = g_strdup ("");
-			} else {
-				/* translators: this is preceded with a string of form 'N folders' (N more than 1) */
-				folder_item_count_str = g_strdup_printf (ngettext("(containing a total of %'d item)",
-										  "(containing a total of %'d items)",
-										  folder_item_count), 
-									 folder_item_count);
-			}
-			
-		}
-	}
-
-	if (non_folder_count != 0) {
-		if (folder_count == 0) {
-			if (non_folder_count == 1) {
-				non_folder_count_str = g_strdup_printf (_("“%s” selected"),
-									first_item_name);
-			} else {
-				non_folder_count_str = g_strdup_printf (ngettext("%'d item selected",
-										 "%'d items selected",
-										 non_folder_count),
-									non_folder_count);
-			}
-		} else {
-			/* Folders selected also, use "other" terminology */
-			non_folder_count_str = g_strdup_printf (ngettext("%'d other item selected",
-									 "%'d other items selected",
-									 non_folder_count),
-								non_folder_count);
-		}
-
-		if (non_folder_size_known) {
-			char *size_string;
-
-			size_string = g_format_size (non_folder_size);
-			/* This is marked for translation in case a localiser
-			 * needs to use something other than parentheses. The
-			 * the message in parentheses is the size of the selected items.
-			 */
-			non_folder_item_count_str = g_strdup_printf (_("(%s)"), size_string);
-			g_free (size_string);
-		} else {
-			non_folder_item_count_str = g_strdup ("");
-		}
-	}
-
-	if (folder_count == 0 && non_folder_count == 0)	{
-		primary_status = NULL;
-		detail_status = NULL;
-	} else if (folder_count == 0) {
-		primary_status = g_strdup (non_folder_count_str);
-		detail_status = g_strdup (non_folder_item_count_str);
-	} else if (non_folder_count == 0) {
-		primary_status = g_strdup (folder_count_str);
-		detail_status  = g_strdup (folder_item_count_str);
-	} else {
-		/* This is marked for translation in case a localizer
-		 * needs to change ", " to something else. The comma
-		 * is between the message about the number of folders
-		 * and the number of items in those folders and the
-		 * message about the number of other items and the
-		 * total size of those items.
-		 */
-		primary_status = g_strdup_printf (_("%s %s, %s %s"),
-						  folder_count_str,
-						  folder_item_count_str,
-						  non_folder_count_str,
-						  non_folder_item_count_str);
-		detail_status = NULL;
-	}
-
-	g_free (first_item_name);
-	g_free (folder_count_str);
-	g_free (folder_item_count_str);
-	g_free (non_folder_count_str);
-	g_free (non_folder_item_count_str);
-
-	nautilus_window_slot_set_status (view->details->slot,
-					 primary_status, detail_status);
-
-	g_free (primary_status);
-	g_free (detail_status);
+	g_signal_emit (view, signals[STATUS_CHANGED], 0);
 }
 
 static void
@@ -3087,7 +2918,7 @@ done_loading (NautilusView *view,
 				nautilus_view_reveal_selection (view);
 			}
 		}
-		nautilus_view_display_selection_info (view);
+		nautilus_view_send_status_change (view);
 	}
 
 	view->details->loading = FALSE;
@@ -3555,7 +3386,7 @@ display_selection_info_idle_callback (gpointer data)
 	g_object_ref (G_OBJECT (view));
 
 	view->details->display_selection_idle_id = 0;
-	nautilus_view_display_selection_info (view);
+	nautilus_view_send_status_change (view);
 	nautilus_view_send_selection_change (view);
 
 	g_object_unref (G_OBJECT (view));
@@ -8987,7 +8818,7 @@ update_status_idle_callback (gpointer data)
 	NautilusView *view;
 
 	view = NAUTILUS_VIEW (data);
-	nautilus_view_display_selection_info (view);
+	nautilus_view_send_status_change (view);
 	view->details->update_status_idle_id = 0;
 	return FALSE;
 }
@@ -9812,6 +9643,14 @@ nautilus_view_class_init (NautilusViewClass *klass)
 			      G_TYPE_NONE, 0);
 	signals[SELECTION_CHANGED] =
 		g_signal_new ("selection-changed",
+			      G_TYPE_FROM_CLASS (klass),
+			      G_SIGNAL_RUN_LAST,
+			      0,
+			      NULL, NULL,
+			      g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	signals[STATUS_CHANGED] =
+		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (klass),
 			      G_SIGNAL_RUN_LAST,
 			      0,

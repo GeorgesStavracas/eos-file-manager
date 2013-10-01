@@ -299,8 +299,6 @@ NautilusWindowSlot *nautilus_view_get_nautilus_window_slot     (NautilusView  *v
 char *              nautilus_view_get_uri                          (NautilusView  *view);
 GtkActionGroup *    nautilus_view_get_action_group                 (NautilusView  *view);
 
-void                nautilus_view_display_selection_info           (NautilusView  *view);
-
 GdkAtom	            nautilus_view_get_copied_files_atom            (NautilusView  *view);
 gboolean            nautilus_view_get_active                       (NautilusView  *view);
 
