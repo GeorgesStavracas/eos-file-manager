@@ -73,7 +73,12 @@ struct NautilusWindowSlotDetails {
 	guint loading_timeout_id;
 	GtkWidget *floating_bar;
 	GtkWidget *view_overlay;
+
+	/* status/action area */
+	GtkWidget *status_box;
+	GtkWidget *info_box;
 	GtkWidget *path_bar;
+	GtkWidget *action_box;
 
 	/* slot contains
 	 *  1) an vbox containing extra_location_widgets
@@ -594,16 +599,26 @@ add_folder_button_clicked_cb (GtkButton *button,
 static void
 create_path_bar_box (NautilusWindowSlot *slot)
 {
-	GtkWidget *box, *child, *button;
+	GtkWidget *box, *button;
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_container_set_border_width (GTK_CONTAINER (box), 12);
 	gtk_box_pack_end (GTK_BOX (slot), box,
 			  FALSE, FALSE, 0);
+	slot->details->status_box = box;
+
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
+	gtk_box_pack_start (GTK_BOX (slot->details->status_box), box, TRUE, TRUE, 0);
+	slot->details->info_box = box;
+
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
+	gtk_box_pack_start (GTK_BOX (slot->details->status_box), box, TRUE, TRUE, 0);
+	slot->details->action_box = box;
 
 	slot->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
 	gtk_widget_set_hexpand (slot->details->path_bar, TRUE);
-	gtk_container_add (GTK_CONTAINER (box), slot->details->path_bar);
+	gtk_container_add (GTK_CONTAINER (slot->details->info_box),
+			   slot->details->path_bar);
 
 	g_signal_connect_object (slot->details->path_bar, "path-clicked",
 				 G_CALLBACK (path_bar_location_changed_callback), slot, 0);
@@ -612,19 +627,19 @@ create_path_bar_box (NautilusWindowSlot *slot)
 
 	button = gtk_button_new ();
 	gtk_widget_set_halign (button, GTK_ALIGN_END);
-	gtk_container_add (GTK_CONTAINER (box), button);
+	gtk_container_add (GTK_CONTAINER (slot->details->action_box), button);
 
-	child = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_container_add (GTK_CONTAINER (button), child);
-	gtk_container_add (GTK_CONTAINER (child),
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	gtk_container_add (GTK_CONTAINER (button), box);
+	gtk_container_add (GTK_CONTAINER (box),
 			   gtk_image_new_from_icon_name ("folder-symbolic", GTK_ICON_SIZE_MENU));
-	gtk_container_add (GTK_CONTAINER (child),
+	gtk_container_add (GTK_CONTAINER (box),
 			   gtk_label_new (_("Add Folder")));
 
 	g_signal_connect (button, "clicked",
 			  G_CALLBACK (add_folder_button_clicked_cb), slot);
 
-	gtk_widget_show_all (box);
+	gtk_widget_show_all (slot->details->status_box);
 }
 
 static void
