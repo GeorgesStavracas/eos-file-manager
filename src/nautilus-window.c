@@ -72,6 +72,8 @@
 
 /* dock items */
 #define MAX_TITLE_LENGTH 180
+#define PATH_BAR_BOX_SPACING 6
+#define PATH_BAR_BOX_BORDER 12
 
 /* Forward and back buttons on the mouse */
 static gboolean mouse_extra_buttons = TRUE;
@@ -1133,8 +1135,8 @@ create_path_bar_box (NautilusWindow *window)
 {
 	GtkWidget *box, *child, *button;
 
-	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (box), 12);
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, PATH_BAR_BOX_SPACING);
+	gtk_container_set_border_width (GTK_CONTAINER (box), PATH_BAR_BOX_BORDER);
 	gtk_box_pack_start (GTK_BOX (window->details->main_view), box,
 			    FALSE, FALSE, 0);
 
@@ -1151,7 +1153,7 @@ create_path_bar_box (NautilusWindow *window)
 	gtk_widget_set_halign (button, GTK_ALIGN_END);
 	gtk_container_add (GTK_CONTAINER (box), button);
 
-	child = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	child = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, PATH_BAR_BOX_SPACING);
 	gtk_container_add (GTK_CONTAINER (button), child);
 	gtk_container_add (GTK_CONTAINER (child),
 			   gtk_image_new_from_icon_name ("folder-symbolic", GTK_ICON_SIZE_MENU));
