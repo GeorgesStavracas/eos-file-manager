@@ -37,6 +37,9 @@
 #include <glib/gi18n.h>
 #include <math.h>
 
+#define TOOLBAR_BUTTON_MARGIN 12
+#define TOOLBAR_BOX_SPACING 6
+
 typedef enum {
 	NAUTILUS_NAVIGATION_DIRECTION_NONE,
 	NAUTILUS_NAVIGATION_DIRECTION_BACK,
@@ -47,8 +50,9 @@ struct _NautilusToolbarPriv {
 	GtkWidget *toolbar;
 	NautilusWindow *window;
 
-	GtkWidget *path_bar;
 	GtkWidget *location_entry;
+	GtkWidget *bar_box;
+	GtkWidget *query_editor;
 
 	GtkToolItem *back_forward;
 
@@ -79,8 +83,11 @@ toolbar_update_appearance (NautilusToolbar *self)
 
 	gtk_widget_set_visible (self->priv->location_entry,
 				show_location_entry);
-	gtk_widget_set_visible (self->priv->path_bar,
-				!show_location_entry);
+
+	if (self->priv->query_editor) {
+		gtk_widget_set_visible (self->priv->query_editor,
+					!show_location_entry);
+	}
 }
 
 static gint
@@ -408,6 +415,7 @@ nautilus_toolbar_constructed (GObject *obj)
 	GtkToolItem *back_forward;
 	GtkToolItem *tool_item;
 	GtkUIManager *ui_manager;
+	GtkSizeGroup *horizontal_size_group;
 	gboolean rtl;
 
 	G_OBJECT_CLASS (nautilus_toolbar_parent_class)->constructed (obj);
@@ -430,8 +438,12 @@ nautilus_toolbar_constructed (GObject *obj)
 	 * using the toolbar. */
 	gtk_style_context_add_class (context, GTK_STYLE_CLASS_MENUBAR);
 
+	horizontal_size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+
 	/* Back and Forward */
 	back_forward = gtk_tool_item_new ();
+	gtk_widget_set_margin_right (GTK_WIDGET (back_forward), TOOLBAR_BUTTON_MARGIN);
+	gtk_size_group_add_widget (horizontal_size_group, GTK_WIDGET (back_forward));
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
 	/* Back */
@@ -456,15 +468,8 @@ nautilus_toolbar_constructed (GObject *obj)
 	gtk_container_add (GTK_CONTAINER (back_forward), box);
 	gtk_container_add (GTK_CONTAINER (self->priv->toolbar), GTK_WIDGET (back_forward));
 
-	gtk_widget_show_all (GTK_WIDGET (back_forward));
-	gtk_widget_set_margin_right (GTK_WIDGET (back_forward), 12);
-
-	/* regular path bar */
-	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_widget_show (hbox);
-
-	self->priv->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), self->priv->path_bar, TRUE, TRUE, 0);
+	/* box for regular search bar */
+	self->priv->bar_box = hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
 	/* entry-like location bar */
 	self->priv->location_entry = nautilus_location_entry_new ();
@@ -474,41 +479,31 @@ nautilus_toolbar_constructed (GObject *obj)
 	gtk_tool_item_set_expand (tool_item, TRUE);
 	gtk_container_add (GTK_CONTAINER (tool_item), hbox);
 	gtk_container_add (GTK_CONTAINER (self->priv->toolbar), GTK_WIDGET (tool_item));
-	gtk_widget_show (GTK_WIDGET (tool_item));
 
-	/* search */
+	/* Right box */
 	tool_item = gtk_tool_item_new ();
-	tool_button = toolbar_create_toolbutton (self, FALSE, TRUE, NAUTILUS_ACTION_SEARCH, NULL);
-	gtk_container_add (GTK_CONTAINER (tool_item), GTK_WIDGET (tool_button));
-	gtk_container_add (GTK_CONTAINER (self->priv->toolbar), GTK_WIDGET (tool_item));
-	gtk_widget_show_all (GTK_WIDGET (tool_item));
-	gtk_widget_set_margin_left (GTK_WIDGET (tool_item), 12);
+	gtk_size_group_add_widget (horizontal_size_group, GTK_WIDGET (tool_item));
+	gtk_widget_set_margin_left (GTK_WIDGET (tool_item), TOOLBAR_BUTTON_MARGIN);
+	gtk_container_add (GTK_CONTAINER (toolbar), GTK_WIDGET (tool_item));
+
+	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, TOOLBAR_BOX_SPACING);
+	gtk_container_add (GTK_CONTAINER (tool_item), hbox);
 
 	/* View buttons */
-	tool_item = gtk_tool_item_new ();
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-
 	tool_button = toolbar_create_toolbutton (self, FALSE, TRUE, NAUTILUS_ACTION_VIEW_LIST, NULL);
 	gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (tool_button));
 	tool_button = toolbar_create_toolbutton (self, FALSE, TRUE, NAUTILUS_ACTION_VIEW_GRID, NULL);
 	gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (tool_button));
-	tool_button = toolbar_create_toolbutton (self, TRUE, FALSE, "go-down-symbolic", _("View options"));
-	gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (tool_button));
-	menu = gtk_ui_manager_get_widget (ui_manager, "/ViewMenu");
-	gtk_menu_button_set_popup (GTK_MENU_BUTTON (tool_button), menu);
 
 	gtk_style_context_add_class (gtk_widget_get_style_context (box),
 				     GTK_STYLE_CLASS_RAISED);
 	gtk_style_context_add_class (gtk_widget_get_style_context (box),
 				     GTK_STYLE_CLASS_LINKED);
 
-	gtk_container_add (GTK_CONTAINER (tool_item), box);
-	gtk_container_add (GTK_CONTAINER (self->priv->toolbar), GTK_WIDGET (tool_item));
-	gtk_widget_show_all (GTK_WIDGET (tool_item));
-	gtk_widget_set_margin_left (GTK_WIDGET (tool_item), 12);
+	gtk_container_add (GTK_CONTAINER (hbox), box);
 
 	/* Action Menu */
-	tool_item = gtk_tool_item_new ();
 	tool_button = toolbar_create_toolbutton (self, TRUE, FALSE, "emblem-system-symbolic", _("Location options"));
 	menu = gtk_ui_manager_get_widget (ui_manager, "/ActionMenu");
 	gtk_widget_set_halign (menu, GTK_ALIGN_END);
@@ -516,16 +511,16 @@ nautilus_toolbar_constructed (GObject *obj)
 	gtk_actionable_set_action_name (GTK_ACTIONABLE (tool_button), "win.gear-menu");
         g_signal_connect (menu, "key-press-event", G_CALLBACK (gear_menu_key_press), self);
 
-	gtk_container_add (GTK_CONTAINER (tool_item), tool_button);
-	gtk_container_add (GTK_CONTAINER (toolbar), GTK_WIDGET (tool_item));
-	gtk_widget_show_all (GTK_WIDGET (tool_item));
-	gtk_widget_set_margin_left (GTK_WIDGET (tool_item), 12);
+	gtk_container_add (GTK_CONTAINER (hbox), tool_button);
 
 	g_signal_connect_swapped (nautilus_preferences,
 				  "changed::" NAUTILUS_PREFERENCES_ALWAYS_USE_LOCATION_ENTRY,
 				  G_CALLBACK (toolbar_update_appearance), self);
 
+	gtk_widget_show_all (GTK_WIDGET (self));
 	toolbar_update_appearance (self);
+
+	g_object_unref (horizontal_size_group);
 }
 
 static void
@@ -625,15 +620,28 @@ nautilus_toolbar_new (NautilusWindow *window)
 }
 
 GtkWidget *
-nautilus_toolbar_get_path_bar (NautilusToolbar *self)
-{
-	return self->priv->path_bar;
-}
-
-GtkWidget *
 nautilus_toolbar_get_location_entry (NautilusToolbar *self)
 {
 	return self->priv->location_entry;
+}
+
+void
+nautilus_toolbar_set_query_editor (NautilusToolbar *self,
+				   GtkWidget       *query_editor)
+{
+	if (self->priv->query_editor != NULL)  {
+		gtk_container_remove (GTK_CONTAINER (self->priv->bar_box),
+				      self->priv->query_editor);
+		self->priv->query_editor = NULL;
+	}
+
+	if (query_editor != NULL) {
+		self->priv->query_editor = query_editor;
+		gtk_box_pack_start (GTK_BOX (self->priv->bar_box), query_editor,
+				    TRUE, TRUE, 0);
+	}
+
+	toolbar_update_appearance (self);
 }
 
 void
