@@ -58,6 +58,7 @@
 #define DEBUG_FLAG NAUTILUS_DEBUG_PLACES
 #include <libnautilus-private/nautilus-debug.h>
 
+#define TREE_VIEW_INDENT_XPAD 12
 #define INITIAL_XPAD 8
 #define INITIAL_YPAD 6
 #define EJECT_BUTTON_XPAD 6
@@ -3334,7 +3335,7 @@ setup_tree_view (NautilusPlacesSidebar *sidebar)
 	tree_view = GTK_TREE_VIEW (gtk_tree_view_new ());
 	gtk_tree_view_set_headers_visible (tree_view, FALSE);
 	gtk_tree_view_set_show_expanders (tree_view, FALSE);
-	gtk_tree_view_set_level_indentation (tree_view, 12);
+	gtk_tree_view_set_level_indentation (tree_view, TREE_VIEW_INDENT_XPAD);
 	data->tree_view = tree_view;
 
 	col = GTK_TREE_VIEW_COLUMN (gtk_tree_view_column_new ());
