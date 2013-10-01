@@ -1335,7 +1335,7 @@ nautilus_application_local_command_line (GApplication *application,
 		files = g_malloc0 (2 * sizeof (GFile *));
 		len = 1;
 
-		files[0] = g_file_new_for_path (g_get_home_dir ());
+		files[0] = nautilus_get_initial_location ();
 		files[1] = NULL;
 	}
 

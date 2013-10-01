@@ -714,6 +714,60 @@ nautilus_get_desktop_directory_uri (void)
 	return desktop_uri;
 }
 
+static const GUserDirectory default_dirs[] = {
+	G_USER_DIRECTORY_DOCUMENTS,
+	G_USER_DIRECTORY_PICTURES,
+	G_USER_DIRECTORY_VIDEOS,
+	G_USER_DIRECTORY_MUSIC,
+	G_USER_DIRECTORY_DOWNLOAD
+};
+
+GList *
+nautilus_get_default_xdg_directories (void)
+{
+	gint idx;
+	const gchar *path;
+	GList *retval = NULL;
+	GList *dirs = NULL;
+
+	for (idx = 0; idx < G_N_ELEMENTS (default_dirs); idx++) {
+		path = g_get_user_special_dir (default_dirs[idx]);
+
+		/* xdg resets special dirs to the home directory in case
+		 * it's not finding what it expects. We don't want the home
+		 * to be added multiple times in that weird configuration.
+		 */
+		if (path == NULL
+		    || g_strcmp0 (path, g_get_home_dir ()) == 0
+		    || g_list_find_custom (dirs, path, (GCompareFunc) g_strcmp0) != NULL) {
+			continue;
+		}
+
+		dirs = g_list_prepend (dirs, (gpointer) path);
+		retval = g_list_prepend (retval, GINT_TO_POINTER (default_dirs[idx]));
+	}
+
+	g_list_free (dirs);
+
+	return g_list_reverse (retval);
+}
+
+GFile *
+nautilus_get_initial_location (void)
+{
+	const gchar *path;
+	GUserDirectory user_dir;
+
+	for (user_dir = 0; user_dir < G_N_ELEMENTS (default_dirs); user_dir++) {
+		path = g_get_user_special_dir (default_dirs[user_dir]);
+		if (path != NULL) {
+			return g_file_new_for_path (path);
+		}
+	}
+
+	return g_file_new_for_path (g_get_home_dir ());
+}
+
 char *
 nautilus_get_home_directory_uri (void)
 {

@@ -351,7 +351,7 @@ nautilus_window_new_tab (NautilusWindow *window)
 
 		scheme = g_file_get_uri_scheme (location);
 		if (strcmp (scheme, "x-nautilus-search") == 0) {
-			location = g_file_new_for_path (g_get_home_dir ());
+			location = nautilus_get_initial_location ();
 		} else {
 			g_object_ref (location);
 		}
