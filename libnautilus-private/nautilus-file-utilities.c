@@ -734,7 +734,7 @@ nautilus_get_default_xdg_directories (void)
 		path = g_get_user_special_dir (default_dirs[idx]);
 
 		/* xdg resets special dirs to the home directory in case
-		 * it's not finiding what it expects. We don't want the home
+		 * it's not finding what it expects. We don't want the home
 		 * to be added multiple times in that weird configuration.
 		 */
 		if (path == NULL
