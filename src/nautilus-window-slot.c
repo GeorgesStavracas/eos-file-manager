@@ -142,6 +142,7 @@ static void location_has_really_changed (NautilusWindowSlot *slot);
 static void nautilus_window_slot_connect_new_content_view (NautilusWindowSlot *slot);
 static void nautilus_window_slot_emit_location_change (NautilusWindowSlot *slot, GFile *from, GFile *to);
 static void nautilus_window_slot_set_status (NautilusWindowSlot *slot, const char *primary_status, const char *detail_status);
+static void update_status_box (NautilusWindowSlot *slot);
 
 static void
 nautilus_window_slot_sync_search_widgets (NautilusWindowSlot *slot)
@@ -599,7 +600,7 @@ add_folder_button_clicked_cb (GtkButton *button,
 static void
 create_path_bar_box (NautilusWindowSlot *slot)
 {
-	GtkWidget *box, *button;
+	GtkWidget *box;
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_container_set_border_width (GTK_CONTAINER (box), 12);
@@ -625,19 +626,7 @@ create_path_bar_box (NautilusWindowSlot *slot)
 	g_signal_connect_object (slot->details->path_bar, "path-event",
 				 G_CALLBACK (path_bar_path_event_callback), slot, 0);
 
-	button = gtk_button_new ();
-	gtk_widget_set_halign (button, GTK_ALIGN_END);
-	gtk_container_add (GTK_CONTAINER (slot->details->action_box), button);
-
-	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_container_add (GTK_CONTAINER (button), box);
-	gtk_container_add (GTK_CONTAINER (box),
-			   gtk_image_new_from_icon_name ("folder-symbolic", GTK_ICON_SIZE_MENU));
-	gtk_container_add (GTK_CONTAINER (box),
-			   gtk_label_new (_("Add Folder")));
-
-	g_signal_connect (button, "clicked",
-			  G_CALLBACK (add_folder_button_clicked_cb), slot);
+	update_status_box (slot);
 
 	gtk_widget_show_all (slot->details->status_box);
 }
@@ -2415,6 +2404,8 @@ view_status_changed_cb (NautilusView *view,
 	char *detail_status;
 	NautilusFile *file;
 
+	update_status_box (slot);
+
 	selection = nautilus_view_get_selection (view);
 	
 	folder_item_count_known = TRUE;
@@ -2561,6 +2552,58 @@ view_status_changed_cb (NautilusView *view,
 
 	g_free (primary_status);
 	g_free (detail_status);
+}
+
+static void
+update_status_box_for_empty_selection (NautilusWindowSlot *slot)
+{
+	GtkWidget *button, *box;
+
+	button = gtk_button_new ();
+	gtk_widget_set_halign (button, GTK_ALIGN_END);
+	gtk_container_add (GTK_CONTAINER (slot->details->action_box), button);
+
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	gtk_container_add (GTK_CONTAINER (button), box);
+	gtk_container_add (GTK_CONTAINER (box),
+			   gtk_image_new_from_icon_name ("folder-symbolic", GTK_ICON_SIZE_MENU));
+	gtk_container_add (GTK_CONTAINER (box),
+			   gtk_label_new (_("Add Folder")));
+
+	g_signal_connect (button, "clicked",
+			  G_CALLBACK (add_folder_button_clicked_cb), slot);
+
+	gtk_widget_show_all (button);
+}
+
+static void
+update_status_box (NautilusWindowSlot *slot)
+{
+	NautilusView *view;
+	GtkWidget *child;
+	GList *children, *l;
+
+	children = gtk_container_get_children (GTK_CONTAINER (slot->details->info_box));
+	for (l = children; l != NULL; l = l->next) {
+		child = l->data;
+		if (child != slot->details->path_bar) {
+			gtk_widget_destroy (child);
+		}
+	}
+	g_list_free (children);
+
+	children = gtk_container_get_children (GTK_CONTAINER (slot->details->action_box));
+	for (l = children; l != NULL; l = l->next) {
+		child = l->data;
+		gtk_widget_destroy (child);
+	}
+	g_list_free (children);
+
+	view = nautilus_window_slot_get_current_view (slot);
+	if (view == NULL ||
+	    nautilus_view_get_selection_count (view) == 0) {
+		update_status_box_for_empty_selection (slot);
+	}
 }
 
 static void
