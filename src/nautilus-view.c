@@ -541,16 +541,6 @@ showing_recent_directory (NautilusView *view)
 }
 
 static gboolean
-nautilus_view_supports_creating_files (NautilusView *view)
-{
-	g_return_val_if_fail (NAUTILUS_IS_VIEW (view), FALSE);
-
-	return !nautilus_view_is_read_only (view)
-		&& !showing_trash_directory (view)
-		&& !showing_recent_directory (view);
-}
-
-static gboolean
 nautilus_view_is_empty (NautilusView *view)
 {
 	g_return_val_if_fail (NAUTILUS_IS_VIEW (view), FALSE);
@@ -3872,17 +3862,13 @@ nautilus_view_create_links_for_files (NautilusView *view, GList *files,
  */
  
 static gboolean
-special_link_in_selection (NautilusView *view)
+special_link_in_selection (GList *selection)
 {
 	gboolean saw_link;
-	GList *selection, *node;
+	GList *node;
 	NautilusFile *file;
 
-	g_return_val_if_fail (NAUTILUS_IS_VIEW (view), FALSE);
-
 	saw_link = FALSE;
-
-	selection = nautilus_view_get_selection (NAUTILUS_VIEW (view));
 
 	for (node = selection; node != NULL; node = node->next) {
 		file = NAUTILUS_FILE (node->data);
@@ -3894,8 +3880,6 @@ special_link_in_selection (NautilusView *view)
 		}
 	}
 	
-	nautilus_file_list_free (selection);
-	
 	return saw_link;
 }
 
@@ -3905,17 +3889,13 @@ special_link_in_selection (NautilusView *view)
  */
  
 static gboolean
-desktop_or_home_dir_in_selection (NautilusView *view)
+desktop_or_home_dir_in_selection (GList *selection)
 {
 	gboolean saw_desktop_or_home_dir;
-	GList *selection, *node;
+	GList *node;
 	NautilusFile *file;
 
-	g_return_val_if_fail (NAUTILUS_IS_VIEW (view), FALSE);
-
 	saw_desktop_or_home_dir = FALSE;
-
-	selection = nautilus_view_get_selection (NAUTILUS_VIEW (view));
 
 	for (node = selection; node != NULL; node = node->next) {
 		file = NAUTILUS_FILE (node->data);
@@ -3928,8 +3908,6 @@ desktop_or_home_dir_in_selection (NautilusView *view)
 			break;
 		}
 	}
-	
-	nautilus_file_list_free (selection);
 	
 	return saw_desktop_or_home_dir;
 }
@@ -8242,14 +8220,87 @@ can_trash_all (GList *files)
 }
 
 static void
+nautilus_view_get_action_state_for_selection (NautilusView *view,
+					      GList *selection,
+					      gboolean *can_copy_out,
+					      gboolean *can_move_out,
+					      gboolean *can_open_out,
+					      gboolean *can_delete_out,
+					      gboolean *can_trash_out,
+					      gboolean *can_create_out,
+					      gboolean *can_link_out)
+{
+	gboolean can_copy;
+	gboolean can_move;
+	gboolean can_delete;
+	gboolean can_open;
+	gboolean can_link;
+	gboolean can_trash;
+	gboolean can_create;
+	gboolean has_special_link;
+	gboolean has_desktop_or_home_dir;
+	gboolean showing_recent;
+	gboolean showing_trash;
+	gint selection_count;
+
+	selection_count = g_list_length (selection);
+
+	has_special_link = special_link_in_selection (selection);
+	has_desktop_or_home_dir = desktop_or_home_dir_in_selection (selection);
+	showing_recent = showing_recent_directory (view);
+	showing_trash = showing_trash_directory (view);
+
+	can_copy = selection_count != 0
+		&& !has_special_link;
+	can_delete =
+		can_delete_all (selection) &&
+		selection_count != 0 &&
+		!has_special_link &&
+		!has_desktop_or_home_dir;
+	can_move = can_delete
+		&& !showing_recent;
+	can_open = selection_count != 0;
+	can_create = !nautilus_view_is_read_only (view)
+		&& !showing_trash
+		&& !showing_recent;
+	can_link = can_create
+		&& can_copy;
+	can_trash =
+		can_trash_all (selection) &&
+		selection_count != 0 &&
+		!has_special_link &&
+		!has_desktop_or_home_dir;
+
+	if (can_copy_out) {
+		*can_copy_out = can_copy;
+	}
+	if (can_move_out) {
+		*can_move_out = can_move;
+	}
+	if (can_open_out) {
+		*can_open_out = can_open;
+	}
+	if (can_delete_out) {
+		*can_delete_out = can_delete;
+	}
+	if (can_trash_out) {
+		*can_trash_out = can_trash;
+	}
+	if (can_create_out) {
+		*can_create_out = can_create;
+	}
+	if (can_link_out) {
+		*can_link_out = can_link;
+	}
+} 
+
+static void
 real_update_menus (NautilusView *view)
 {
 	GList *selection, *l;
 	gint selection_count;
 	const char *tip, *label;
 	char *label_with_underscore;
-	gboolean selection_contains_special_link;
-	gboolean selection_contains_desktop_or_home_dir;
 	gboolean selection_contains_recent;
 	gboolean can_create_files;
 	gboolean can_delete_files;
@@ -8272,28 +8323,17 @@ real_update_menus (NautilusView *view)
 	gboolean show_properties;
 
 	selection = nautilus_view_get_selection (view);
+	nautilus_view_get_action_state_for_selection (view, selection,
+						      &can_copy_files,
+						      &can_move_files,
+						      &can_open,
+						      &can_delete_files,
+						      &can_trash_files,
+						      &can_create_files,
+						      &can_link_files);
+
 	selection_count = g_list_length (selection);
-
-	selection_contains_special_link = special_link_in_selection (view);
-	selection_contains_desktop_or_home_dir = desktop_or_home_dir_in_selection (view);
 	selection_contains_recent = showing_recent_directory (view);
-
-	can_create_files = nautilus_view_supports_creating_files (view);
-	can_delete_files =
-		can_delete_all (selection) &&
-		selection_count != 0 &&
-		!selection_contains_special_link &&
-		!selection_contains_desktop_or_home_dir;
-	can_trash_files =
-		can_trash_all (selection) &&
-		selection_count != 0 &&
-		!selection_contains_special_link &&
-		!selection_contains_desktop_or_home_dir;
-	can_copy_files = selection_count != 0
-		&& !selection_contains_special_link;
-
-	can_move_files = can_delete_files && !selection_contains_recent;
-	can_link_files = can_create_files && can_copy_files;
 
 	action = gtk_action_group_get_action (view->details->dir_action_group,
 					      NAUTILUS_ACTION_RENAME);
@@ -8337,7 +8377,7 @@ real_update_menus (NautilusView *view)
 					      NAUTILUS_ACTION_OPEN);
 	gtk_action_set_sensitive (action, selection_count != 0);
 	
-	can_open = show_app = show_run = selection_count != 0;
+	show_app = show_run = selection_count != 0;
 
 	for (l = selection; l != NULL; l = l->next) {
 		NautilusFile *file;
