@@ -32,6 +32,7 @@
 #include "nautilus-desktop-window.h"
 #include "nautilus-floating-bar.h"
 #include "nautilus-list-view.h"
+#include "nautilus-pathbar.h"
 #include "nautilus-special-location-bar.h"
 #include "nautilus-toolbar.h"
 #include "nautilus-trash-bar.h"
@@ -49,6 +50,9 @@
 #include <libnautilus-private/nautilus-monitor.h>
 #include <libnautilus-private/nautilus-profile.h>
 #include <libnautilus-extension/nautilus-location-widget-provider.h>
+
+#define PATH_BAR_BOX_SPACING 6
+#define PATH_BAR_BOX_BORDER 12
 
 G_DEFINE_TYPE (NautilusWindowSlot, nautilus_window_slot, GTK_TYPE_BOX);
 
@@ -72,6 +76,12 @@ struct NautilusWindowSlotDetails {
 	guint loading_timeout_id;
 	GtkWidget *floating_bar;
 	GtkWidget *view_overlay;
+
+	/* status/action area */
+	GtkWidget *status_box;
+	GtkWidget *info_box;
+	GtkWidget *path_bar;
+	GtkWidget *action_box;
 
 	/* slot contains
 	 *  1) an vbox containing extra_location_widgets
@@ -134,6 +144,8 @@ static void nautilus_window_slot_force_reload (NautilusWindowSlot *slot);
 static void location_has_really_changed (NautilusWindowSlot *slot);
 static void nautilus_window_slot_connect_new_content_view (NautilusWindowSlot *slot);
 static void nautilus_window_slot_emit_location_change (NautilusWindowSlot *slot, GFile *from, GFile *to);
+static void nautilus_window_slot_set_status (NautilusWindowSlot *slot, const char *primary_status, const char *detail_status);
+static void update_status_box (NautilusWindowSlot *slot);
 
 static void
 nautilus_window_slot_sync_search_widgets (NautilusWindowSlot *slot)
@@ -495,6 +507,133 @@ nautilus_window_slot_get_property (GObject *object,
 	}
 }
 
+static int
+bookmark_list_get_uri_index (GList *list, GFile *location)
+{
+	NautilusBookmark *bookmark;
+	GList *l;
+	GFile *tmp;
+	int i;
+
+	g_return_val_if_fail (location != NULL, -1);
+
+	for (i = 0, l = list; l != NULL; i++, l = l->next) {
+		bookmark = NAUTILUS_BOOKMARK (l->data);
+
+		tmp = nautilus_bookmark_get_location (bookmark);
+		if (g_file_equal (location, tmp)) {
+			g_object_unref (tmp);
+			return i;
+		}
+		g_object_unref (tmp);
+	}
+
+	return -1;
+}
+
+static void
+path_bar_location_changed_callback (GtkWidget          *widget,
+				    GFile              *location,
+				    NautilusWindowSlot *slot)
+{
+	int i;
+
+	/* check whether we already visited the target location */
+	i = bookmark_list_get_uri_index (slot->details->back_list, location);
+	if (i >= 0) {
+		nautilus_window_back_or_forward (slot->details->window, TRUE, i, 0);
+	} else {
+		nautilus_window_slot_open_location (slot, location, 0);
+	}
+}
+
+static void
+path_bar_path_event_callback (NautilusPathBar    *path_bar,
+			      GFile              *location,
+			      GdkEventButton     *event,
+			      NautilusWindowSlot *slot)
+{
+	NautilusWindowOpenFlags flags;
+	int mask;
+	NautilusView *view;
+	char *uri;
+
+	if (event->type == GDK_BUTTON_RELEASE) {
+		mask = event->state & gtk_accelerator_get_default_mod_mask ();
+		flags = 0;
+
+		if (event->button == 2 && mask == 0) {
+			flags = NAUTILUS_WINDOW_OPEN_FLAG_NEW_TAB;
+		} else if (event->button == 1 && mask == GDK_CONTROL_MASK) {
+			flags = NAUTILUS_WINDOW_OPEN_FLAG_NEW_WINDOW;
+		}
+
+		if (flags != 0) {
+			nautilus_window_slot_open_location (slot, location, flags);
+		}
+	} else if (event->button == 3) {
+		view = nautilus_window_slot_get_view (slot);
+		if (view != NULL) {
+			uri = g_file_get_uri (location);
+			nautilus_view_pop_up_location_context_menu (view, event, uri);
+			g_free (uri);
+		}
+	}
+}
+
+static void
+add_folder_button_clicked_cb (GtkButton *button,
+			      NautilusWindowSlot *slot)
+{
+	NautilusView *view;
+	GtkActionGroup *action_group;
+	GtkAction *action;
+
+	view = nautilus_window_slot_get_view (slot);
+	if (view == NULL) {
+		return;
+	}
+
+	action_group = nautilus_view_get_action_group (view);
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_NEW_FOLDER);
+	gtk_action_activate (action);
+}
+
+static void
+create_path_bar_box (NautilusWindowSlot *slot)
+{
+	GtkWidget *box;
+
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, PATH_BAR_BOX_SPACING);
+	gtk_container_set_border_width (GTK_CONTAINER (box), PATH_BAR_BOX_BORDER);
+	gtk_box_pack_end (GTK_BOX (slot), box, FALSE, FALSE, 0);
+	slot->details->status_box = box;
+
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, PATH_BAR_BOX_SPACING);
+	gtk_widget_set_hexpand (box, TRUE);
+	gtk_container_add (GTK_CONTAINER (slot->details->status_box), box);
+	slot->details->info_box = box;
+
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, PATH_BAR_BOX_SPACING);
+	gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
+	gtk_container_add (GTK_CONTAINER (slot->details->status_box), box);
+	slot->details->action_box = box;
+
+	slot->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
+	gtk_box_pack_end (GTK_BOX (slot->details->info_box),
+			  slot->details->path_bar, FALSE, FALSE, 0);
+
+	g_signal_connect_object (slot->details->path_bar, "path-clicked",
+				 G_CALLBACK (path_bar_location_changed_callback), slot, 0);
+	g_signal_connect_object (slot->details->path_bar, "path-event",
+				 G_CALLBACK (path_bar_path_event_callback), slot, 0);
+
+	update_status_box (slot);
+
+	gtk_widget_show_all (slot->details->status_box);
+}
+
 static void
 nautilus_window_slot_constructed (GObject *object)
 {
@@ -526,6 +665,8 @@ nautilus_window_slot_constructed (GObject *object)
 	gtk_widget_set_valign (slot->details->floating_bar, GTK_ALIGN_END);
 	gtk_overlay_add_overlay (GTK_OVERLAY (slot->details->view_overlay),
 				 slot->details->floating_bar);
+
+	create_path_bar_box (slot);
 
 	g_signal_connect (slot->details->floating_bar, "action",
 			  G_CALLBACK (floating_bar_action_cb), slot);
@@ -909,6 +1050,8 @@ nautilus_window_slot_set_location (NautilusWindowSlot *slot,
 
 	old_location = slot->details->location;
 	slot->details->location = g_object_ref (location);
+	nautilus_path_bar_set_path (NAUTILUS_PATH_BAR (slot->details->path_bar),
+				    location);
 
 	if (slot == nautilus_window_get_active_slot (slot->details->window)) {
 		nautilus_window_sync_location_widgets (slot->details->window);
@@ -2244,6 +2387,309 @@ view_begin_loading_cb (NautilusView       *view,
 }
 
 static void
+pack_button (GtkWidget *container,
+	     GtkActionGroup *action_group,
+	     const gchar *action_name,
+	     const gchar *label)
+{
+	GtkAction *action;
+	GtkWidget *button;
+
+	button = gtk_button_new_with_label (label);
+	action = gtk_action_group_get_action (action_group, action_name);
+	gtk_activatable_set_use_action_appearance (GTK_ACTIVATABLE (button), FALSE);
+	gtk_activatable_set_related_action (GTK_ACTIVATABLE (button), action);
+
+	gtk_container_add (GTK_CONTAINER (container), button);
+}
+
+static void
+update_action_box_for_selection (NautilusWindowSlot *slot,
+				 NautilusView *view)
+{
+	GtkActionGroup *action_group;
+
+	action_group = nautilus_view_get_action_group (view);
+
+	pack_button (slot->details->action_box, action_group,
+		     NAUTILUS_ACTION_COPY_TO, _("Copy"));
+	pack_button (slot->details->action_box, action_group,
+		     NAUTILUS_ACTION_MOVE_TO, _("Move"));
+	pack_button (slot->details->action_box, action_group,
+		     NAUTILUS_ACTION_OPEN, _("Open"));
+
+	gtk_widget_show_all (slot->details->action_box);
+}
+
+static GtkWidget *
+create_line (const gchar *markup_format,
+	     const gchar *title,
+	     const gchar *string)
+{
+	GtkWidget *ret;
+	gchar *str;
+
+	ret = NULL;
+
+	if (string == NULL) {
+		goto out;
+	}
+
+	if (title != NULL) {
+		str = g_strdup_printf (markup_format, title, string);
+	} else {
+		str = g_strdup_printf (markup_format, string);
+	}
+
+	ret = gtk_label_new (str);
+	gtk_label_set_use_markup (GTK_LABEL (ret), TRUE);
+	gtk_misc_set_alignment (GTK_MISC (ret), 0.0, 0.5);
+	g_free (str);
+
+ out:
+	return ret;
+}
+
+static GtkWidget *
+create_label_line (const gchar *title,
+		   const gchar *string)
+{
+	return create_line ("<span size='smaller'>%s %s</span>", title, string);
+}
+
+static GtkWidget *
+create_header_line (const gchar *string)
+{
+	return create_line ("<b>%s</b>", NULL, string);
+}
+
+static void
+update_status_box_for_selection (NautilusWindowSlot *slot,
+				 NautilusView *view,
+				 GList *selection)
+{
+	goffset non_folder_size;
+	gboolean non_folder_size_known;
+	gboolean folder_item_count_known;
+	gboolean type_uniform;
+	guint non_folder_count, folder_count;
+	guint file_item_count, folder_item_count;
+	guint selection_count;
+	GList *p;
+	char *first_item_name;
+	char *header_str;
+	char *size_str;
+	char *type_str, *last_type_str;
+	char *date_str;
+	char *str;
+	NautilusFile *file;
+	GtkWidget *box, *w, *image;
+	GdkPixbuf *pixbuf;
+
+	update_action_box_for_selection (slot, view);
+
+	selection_count = 0;
+	folder_count = 0;
+	folder_item_count_known = TRUE;
+	folder_item_count = 0;
+	file_item_count = 0;
+	non_folder_count = 0;
+	non_folder_size_known = FALSE;
+	non_folder_size = 0;
+	type_uniform = TRUE;
+	first_item_name = NULL;
+	header_str = NULL;
+	size_str = NULL;
+	type_str = NULL;
+	last_type_str = NULL;
+	date_str = NULL;
+	
+	for (p = selection; p != NULL; p = p->next) {
+		file = p->data;
+		selection_count++;
+
+		if (nautilus_file_is_directory (file)) {
+			folder_count++;
+			if (nautilus_file_get_directory_item_count (file, &file_item_count, NULL)) {
+				folder_item_count += file_item_count;
+			} else {
+				folder_item_count_known = FALSE;
+			}
+		} else {
+			non_folder_count++;
+			if (!nautilus_file_can_get_size (file)) {
+				non_folder_size_known = TRUE;
+				non_folder_size += nautilus_file_get_size (file);
+			}
+		}
+
+		if (type_uniform) {
+			type_str = nautilus_file_get_string_attribute (file, "type");
+
+			if (last_type_str == NULL) {
+				last_type_str = g_strdup (type_str);
+			} else {
+				type_uniform = (g_strcmp0 (last_type_str, type_str) == 0);
+			}
+
+			g_free (type_str);
+			type_str = NULL;
+		}
+	}
+
+	if (folder_count == 0) {
+		folder_item_count_known = FALSE;
+	}
+
+	if (non_folder_size_known && folder_item_count_known) {
+		str = g_format_size (non_folder_size);
+		size_str = g_strdup_printf (ngettext("%s and %'d item", 
+						     "%s and %'d items", 
+						     folder_item_count), 
+					    str, folder_item_count);
+		g_free (str);
+	} else if (folder_item_count_known) {
+		size_str = g_strdup_printf (ngettext("%'d item", 
+						     "%'d items", 
+						     folder_item_count), 
+					    folder_item_count);
+	} else if (non_folder_size_known) {
+		size_str = g_format_size (non_folder_size);
+	}
+
+	if (type_uniform) {
+		type_str = last_type_str;
+	}
+
+	if (selection_count == 1) {
+		file = selection->data;
+		header_str = nautilus_file_get_display_name (file);
+		date_str = nautilus_file_get_string_attribute (file, "date_modified");
+
+		pixbuf = nautilus_file_get_icon_pixbuf (file,
+							NAUTILUS_ICON_SIZE_LARGE,
+							TRUE,
+							NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
+		image = gtk_image_new_from_pixbuf (pixbuf);
+		g_object_unref (pixbuf);
+	} else {
+		header_str = g_strdup_printf (ngettext("%'d item", 
+						       "%'d items", 
+						       selection_count), 
+					      selection_count);
+
+		image = gtk_image_new_from_icon_name ("emblem-documents-symbolic", GTK_ICON_SIZE_DIALOG);
+		gtk_image_set_pixel_size (GTK_IMAGE (image), NAUTILUS_ICON_SIZE_LARGE);
+	}
+
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	gtk_container_add (GTK_CONTAINER (slot->details->info_box), box);
+
+	gtk_container_add (GTK_CONTAINER (box), image);
+	gtk_widget_show_all (box);
+
+	w = gtk_box_new (GTK_ORIENTATION_VERTICAL, 3);
+	gtk_container_add (GTK_CONTAINER (box), w);
+	box = w;
+
+	w = create_header_line (header_str);
+	if (w != NULL) {
+		gtk_container_add (GTK_CONTAINER (box), w);
+	}
+
+	w = create_label_line ((selection_count > 1) ? _("Total Size:") : _("Size:"), size_str);
+	if (w != NULL) {
+		gtk_container_add (GTK_CONTAINER (box), w);
+	}
+
+	w = create_label_line (_("Type:"), type_str);
+	if (w != NULL) {
+		gtk_container_add (GTK_CONTAINER (box), w);
+	}
+
+	w = create_label_line (_("Date:"), date_str);
+	if (w != NULL) {
+		gtk_container_add (GTK_CONTAINER (box), w);
+	}
+
+	gtk_widget_show_all (box);
+
+	g_free (header_str);
+	g_free (size_str);
+	g_free (type_str);
+	g_free (date_str);
+	g_free (first_item_name);
+}
+
+static void
+update_status_box_for_empty_selection (NautilusWindowSlot *slot)
+{
+	GtkWidget *button, *box;
+
+	button = gtk_button_new ();
+	gtk_container_add (GTK_CONTAINER (slot->details->action_box), button);
+
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	gtk_container_add (GTK_CONTAINER (button), box);
+	gtk_container_add (GTK_CONTAINER (box),
+			   gtk_image_new_from_icon_name ("folder-symbolic", GTK_ICON_SIZE_MENU));
+	gtk_container_add (GTK_CONTAINER (box),
+			   gtk_label_new (_("Add Folder")));
+
+	g_signal_connect (button, "clicked",
+			  G_CALLBACK (add_folder_button_clicked_cb), slot);
+
+	gtk_widget_show_all (button);
+}
+
+static void
+update_status_box (NautilusWindowSlot *slot)
+{
+	NautilusView *view;
+	GtkWidget *child;
+	GList *children, *l, *selection;
+
+	children = gtk_container_get_children (GTK_CONTAINER (slot->details->info_box));
+	for (l = children; l != NULL; l = l->next) {
+		child = l->data;
+		if (child != slot->details->path_bar) {
+			gtk_widget_destroy (child);
+		}
+	}
+	g_list_free (children);
+
+	children = gtk_container_get_children (GTK_CONTAINER (slot->details->action_box));
+	for (l = children; l != NULL; l = l->next) {
+		child = l->data;
+		gtk_widget_destroy (child);
+	}
+	g_list_free (children);
+
+	selection = NULL;
+	view = nautilus_window_slot_get_current_view (slot);
+
+	if (view != NULL) {
+		selection = nautilus_view_get_selection (view);
+	}
+
+	if (selection != NULL) {
+		update_status_box_for_selection (slot, view, selection);
+	} else {
+		update_status_box_for_empty_selection (slot);
+	}
+
+	nautilus_file_list_free (selection);
+}
+
+static void
+view_status_changed_cb (NautilusView *view,
+			NautilusWindowSlot *slot)
+{
+
+	update_status_box (slot);
+}
+
+static void
 nautilus_window_slot_connect_new_content_view (NautilusWindowSlot *slot)
 {
 	if (slot->details->content_view != NULL) {
@@ -2255,6 +2701,7 @@ nautilus_window_slot_connect_new_content_view (NautilusWindowSlot *slot)
 	if (slot->details->new_content_view != NULL) {
 		g_signal_connect (slot->details->new_content_view, "begin-loading", G_CALLBACK (view_begin_loading_cb), slot);
 		g_signal_connect (slot->details->new_content_view, "end-loading", G_CALLBACK (view_end_loading_cb), slot);
+		g_signal_connect (slot->details->new_content_view, "status-changed", G_CALLBACK (view_status_changed_cb), slot);
 	}
 }
 
@@ -2672,7 +3119,7 @@ set_floating_bar_status (NautilusWindowSlot *slot,
 				    set_status_data_free);
 }
 
-void
+static void
 nautilus_window_slot_set_status (NautilusWindowSlot *slot,
 				 const char *primary_status,
 				 const char *detail_status)

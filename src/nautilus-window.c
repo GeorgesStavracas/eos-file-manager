@@ -39,7 +39,6 @@
 #include "nautilus-mime-actions.h"
 #include "nautilus-notebook.h"
 #include "nautilus-places-sidebar.h"
-#include "nautilus-pathbar.h"
 #include "nautilus-toolbar.h"
 #include "nautilus-view-factory.h"
 #include "nautilus-window-slot.h"
@@ -72,8 +71,6 @@
 
 /* dock items */
 #define MAX_TITLE_LENGTH 180
-#define PATH_BAR_BOX_SPACING 6
-#define PATH_BAR_BOX_BORDER 12
 
 /* Forward and back buttons on the mouse */
 static gboolean mouse_extra_buttons = TRUE;
@@ -152,30 +149,6 @@ nautilus_window_go_to_full (NautilusWindow *window,
 
 	nautilus_window_slot_open_location_full (nautilus_window_get_active_slot (window),
 						 location, 0, NULL, callback, user_data);
-}
-
-static int
-bookmark_list_get_uri_index (GList *list, GFile *location)
-{
-	NautilusBookmark *bookmark;
-	GList *l;
-	GFile *tmp;
-	int i;
-
-	g_return_val_if_fail (location != NULL, -1);
-
-	for (i = 0, l = list; l != NULL; i++, l = l->next) {
-		bookmark = NAUTILUS_BOOKMARK (l->data);
-
-		tmp = nautilus_bookmark_get_location (bookmark);
-		if (g_file_equal (location, tmp)) {
-			g_object_unref (tmp);
-			return i;
-		}
-		g_object_unref (tmp);
-	}
-
-	return -1;
 }
 
 static void
@@ -694,7 +667,6 @@ nautilus_window_sync_location_widgets (NautilusWindow *window)
 
 		location_entry = nautilus_toolbar_get_location_entry (NAUTILUS_TOOLBAR (window->details->toolbar));
 		nautilus_location_entry_set_location (NAUTILUS_LOCATION_ENTRY (location_entry), location);
-		nautilus_path_bar_set_path (NAUTILUS_PATH_BAR (window->details->path_bar), location);
 	}
 
 	nautilus_window_sync_up_button (window);
@@ -725,60 +697,6 @@ nautilus_window_ensure_location_entry (NautilusWindow *window)
 	nautilus_location_entry_focus (NAUTILUS_LOCATION_ENTRY (location_entry));
 
 	return location_entry;
-}
-
-static void
-path_bar_location_changed_callback (GtkWidget      *widget,
-				    GFile          *location,
-				    NautilusWindow *window)
-{
-	NautilusWindowSlot *slot;
-	int i;
-
-	slot = window->details->active_slot;
-	/* check whether we already visited the target location */
-	i = bookmark_list_get_uri_index (nautilus_window_slot_get_back_history (slot), location);
-	if (i >= 0) {
-		nautilus_window_back_or_forward (window, TRUE, i, 0);
-	} else {
-		nautilus_window_slot_open_location (slot, location, 0);
-	}
-}
-
-static void
-path_bar_path_event_callback (NautilusPathBar *path_bar,
-			      GFile           *location,
-			      GdkEventButton  *event,
-			      NautilusWindow  *window)
-{
-	NautilusWindowSlot *slot;
-	NautilusWindowOpenFlags flags;
-	int mask;
-	NautilusView *view;
-	char *uri;
-
-	if (event->type == GDK_BUTTON_RELEASE) {
-		mask = event->state & gtk_accelerator_get_default_mod_mask ();
-		flags = 0;
-
-		if (event->button == 2 && mask == 0) {
-			flags = NAUTILUS_WINDOW_OPEN_FLAG_NEW_TAB;
-		} else if (event->button == 1 && mask == GDK_CONTROL_MASK) {
-			flags = NAUTILUS_WINDOW_OPEN_FLAG_NEW_WINDOW;
-		}
-
-		if (flags != 0) {
-			slot = nautilus_window_get_active_slot (window);
-			nautilus_window_slot_open_location (slot, location, flags);
-		}
-	} else if (event->button == 3) {
-		view = nautilus_window_get_active_view (window);
-		if (view != NULL) {
-			uri = g_file_get_uri (location);
-			nautilus_view_pop_up_location_context_menu (view, event, uri);
-			g_free (uri);
-		}
-	}
 }
 
 static void
@@ -1112,61 +1030,6 @@ create_notebook (NautilusWindow *window)
 }
 
 static void
-add_folder_button_clicked_cb (GtkButton *button,
-			      NautilusWindow *window)
-{
-	NautilusView *view;
-	GtkActionGroup *action_group;
-	GtkAction *action;
-
-	view = nautilus_window_get_active_view (window);
-	if (view == NULL) {
-		return;
-	}
-
-	action_group = nautilus_view_get_action_group (view);
-	action = gtk_action_group_get_action (action_group,
-					      NAUTILUS_ACTION_NEW_FOLDER);
-	gtk_action_activate (action);
-}
-
-static void
-create_path_bar_box (NautilusWindow *window)
-{
-	GtkWidget *box, *child, *button;
-
-	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, PATH_BAR_BOX_SPACING);
-	gtk_container_set_border_width (GTK_CONTAINER (box), PATH_BAR_BOX_BORDER);
-	gtk_box_pack_start (GTK_BOX (window->details->main_view), box,
-			    FALSE, FALSE, 0);
-
-	window->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
-	gtk_widget_set_hexpand (window->details->path_bar, TRUE);
-	gtk_container_add (GTK_CONTAINER (box), window->details->path_bar);
-
-	g_signal_connect_object (window->details->path_bar, "path-clicked",
-				 G_CALLBACK (path_bar_location_changed_callback), window, 0);
-	g_signal_connect_object (window->details->path_bar, "path-event",
-				 G_CALLBACK (path_bar_path_event_callback), window, 0);
-
-	button = gtk_button_new ();
-	gtk_widget_set_halign (button, GTK_ALIGN_END);
-	gtk_container_add (GTK_CONTAINER (box), button);
-
-	child = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, PATH_BAR_BOX_SPACING);
-	gtk_container_add (GTK_CONTAINER (button), child);
-	gtk_container_add (GTK_CONTAINER (child),
-			   gtk_image_new_from_icon_name ("folder-symbolic", GTK_ICON_SIZE_MENU));
-	gtk_container_add (GTK_CONTAINER (child),
-			   gtk_label_new (_("Add Folder")));
-
-	g_signal_connect (button, "clicked",
-			  G_CALLBACK (add_folder_button_clicked_cb), window);
-
-	gtk_widget_show_all (box);
-}
-
-static void
 nautilus_window_constructed (GObject *self)
 {
 	NautilusWindow *window;
@@ -1219,8 +1082,6 @@ nautilus_window_constructed (GObject *self)
 
 	window->details->notebook = create_notebook (window);
 	nautilus_window_set_initial_window_geometry (window);
-
-	create_path_bar_box (window);
 
 	slot = nautilus_window_open_slot (window, 0);
 	nautilus_window_set_active_slot (window, slot);

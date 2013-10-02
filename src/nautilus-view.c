@@ -143,6 +143,7 @@ enum {
 	REMOVE_FILE,
 	ZOOM_LEVEL_CHANGED,
 	SELECTION_CHANGED,
+	STATUS_CHANGED,
 	TRASH,
 	DELETE,
 	LAST_SIGNAL
@@ -251,9 +252,6 @@ struct NautilusViewDetails
 
 	gboolean metadata_for_directory_as_file_pending;
 	gboolean metadata_for_files_in_directory_pending;
-
-	gboolean selection_change_is_due_to_shell;
-	gboolean send_selection_change_to_shell;
 
 	GtkActionGroup *open_with_action_group;
 	guint open_with_merge_id;
@@ -540,16 +538,6 @@ showing_recent_directory (NautilusView *view)
 		return nautilus_file_is_in_recent (file);
 	}
 	return FALSE;
-}
-
-static gboolean
-nautilus_view_supports_creating_files (NautilusView *view)
-{
-	g_return_val_if_fail (NAUTILUS_IS_VIEW (view), FALSE);
-
-	return !nautilus_view_is_read_only (view)
-		&& !showing_trash_directory (view)
-		&& !showing_recent_directory (view);
 }
 
 static gboolean
@@ -2577,9 +2565,7 @@ nautilus_view_set_selection (NautilusView *nautilus_view,
 		/* If we aren't still loading, set the selection right now,
 		 * and reveal the new selection.
 		 */
-		view->details->selection_change_is_due_to_shell = TRUE;
 		nautilus_view_call_set_selection (view, selection);
-		view->details->selection_change_is_due_to_shell = FALSE;
 		nautilus_view_reveal_selection (view);
 	} else {
 		/* If we are still loading, set the list of pending URIs instead.
@@ -2813,9 +2799,6 @@ nautilus_view_finalize (GObject *object)
 					      sort_directories_first_changed_callback, view);
 	g_signal_handlers_disconnect_by_func (gtk_filechooser_preferences,
 					      show_hidden_files_changed_callback, view);
-	g_signal_handlers_disconnect_by_func (nautilus_window_state,
-					      nautilus_view_display_selection_info, view);
-
 	g_signal_handlers_disconnect_by_func (gnome_lockdown_preferences,
 					      schedule_update_menus, view);
 
@@ -2829,188 +2812,16 @@ nautilus_view_finalize (GObject *object)
 	G_OBJECT_CLASS (nautilus_view_parent_class)->finalize (object);
 }
 
-/**
- * nautilus_view_display_selection_info:
- *
- * Display information about the current selection, and notify the view frame of the changed selection.
- * @view: NautilusView for which to display selection info.
- *
- **/
-void
-nautilus_view_display_selection_info (NautilusView *view)
+static void
+nautilus_view_send_status_change (NautilusView *view)
 {
-	GList *selection;
-	goffset non_folder_size;
-	gboolean non_folder_size_known;
-	guint non_folder_count, folder_count, folder_item_count;
-	gboolean folder_item_count_known;
-	guint file_item_count;
-	GList *p;
-	char *first_item_name;
-	char *non_folder_count_str;
-	char *non_folder_item_count_str;
-	char *folder_count_str;
-	char *folder_item_count_str;
-	char *primary_status;
-	char *detail_status;
-	NautilusFile *file;
-
-	g_return_if_fail (NAUTILUS_IS_VIEW (view));
-
-	selection = nautilus_view_get_selection (view);
-	
-	folder_item_count_known = TRUE;
-	folder_count = 0;
-	folder_item_count = 0;
-	non_folder_count = 0;
-	non_folder_size_known = FALSE;
-	non_folder_size = 0;
-	first_item_name = NULL;
-	folder_count_str = NULL;
-	folder_item_count_str = NULL;
-	non_folder_count_str = NULL;
-	non_folder_item_count_str = NULL;
-	
-	for (p = selection; p != NULL; p = p->next) {
-		file = p->data;
-		if (nautilus_file_is_directory (file)) {
-			folder_count++;
-			if (nautilus_file_get_directory_item_count (file, &file_item_count, NULL)) {
-				folder_item_count += file_item_count;
-			} else {
-				folder_item_count_known = FALSE;
-			}
-		} else {
-			non_folder_count++;
-			if (!nautilus_file_can_get_size (file)) {
-				non_folder_size_known = TRUE;
-				non_folder_size += nautilus_file_get_size (file);
-			}
-		}
-
-		if (first_item_name == NULL) {
-			first_item_name = nautilus_file_get_display_name (file);
-		}
-	}
-	
-	nautilus_file_list_free (selection);
-	
-	/* Break out cases for localization's sake. But note that there are still pieces
-	 * being assembled in a particular order, which may be a problem for some localizers.
-	 */
-
-	if (folder_count != 0) {
-		if (folder_count == 1 && non_folder_count == 0) {
-			folder_count_str = g_strdup_printf (_("“%s” selected"), first_item_name);
-		} else {
-			folder_count_str = g_strdup_printf (ngettext("%'d folder selected", 
-								     "%'d folders selected", 
-								     folder_count), 
-							    folder_count);
-		}
-
-		if (folder_count == 1) {
-			if (!folder_item_count_known) {
-				folder_item_count_str = g_strdup ("");
-			} else {
-				folder_item_count_str = g_strdup_printf (ngettext("(containing %'d item)",
-										  "(containing %'d items)",
-										  folder_item_count), 
-									 folder_item_count);
-			}
-		}
-		else {
-			if (!folder_item_count_known) {
-				folder_item_count_str = g_strdup ("");
-			} else {
-				/* translators: this is preceded with a string of form 'N folders' (N more than 1) */
-				folder_item_count_str = g_strdup_printf (ngettext("(containing a total of %'d item)",
-										  "(containing a total of %'d items)",
-										  folder_item_count), 
-									 folder_item_count);
-			}
-			
-		}
-	}
-
-	if (non_folder_count != 0) {
-		if (folder_count == 0) {
-			if (non_folder_count == 1) {
-				non_folder_count_str = g_strdup_printf (_("“%s” selected"),
-									first_item_name);
-			} else {
-				non_folder_count_str = g_strdup_printf (ngettext("%'d item selected",
-										 "%'d items selected",
-										 non_folder_count),
-									non_folder_count);
-			}
-		} else {
-			/* Folders selected also, use "other" terminology */
-			non_folder_count_str = g_strdup_printf (ngettext("%'d other item selected",
-									 "%'d other items selected",
-									 non_folder_count),
-								non_folder_count);
-		}
-
-		if (non_folder_size_known) {
-			char *size_string;
-
-			size_string = g_format_size (non_folder_size);
-			/* This is marked for translation in case a localiser
-			 * needs to use something other than parentheses. The
-			 * the message in parentheses is the size of the selected items.
-			 */
-			non_folder_item_count_str = g_strdup_printf (_("(%s)"), size_string);
-			g_free (size_string);
-		} else {
-			non_folder_item_count_str = g_strdup ("");
-		}
-	}
-
-	if (folder_count == 0 && non_folder_count == 0)	{
-		primary_status = NULL;
-		detail_status = NULL;
-	} else if (folder_count == 0) {
-		primary_status = g_strdup (non_folder_count_str);
-		detail_status = g_strdup (non_folder_item_count_str);
-	} else if (non_folder_count == 0) {
-		primary_status = g_strdup (folder_count_str);
-		detail_status  = g_strdup (folder_item_count_str);
-	} else {
-		/* This is marked for translation in case a localizer
-		 * needs to change ", " to something else. The comma
-		 * is between the message about the number of folders
-		 * and the number of items in those folders and the
-		 * message about the number of other items and the
-		 * total size of those items.
-		 */
-		primary_status = g_strdup_printf (_("%s %s, %s %s"),
-						  folder_count_str,
-						  folder_item_count_str,
-						  non_folder_count_str,
-						  non_folder_item_count_str);
-		detail_status = NULL;
-	}
-
-	g_free (first_item_name);
-	g_free (folder_count_str);
-	g_free (folder_item_count_str);
-	g_free (non_folder_count_str);
-	g_free (non_folder_item_count_str);
-
-	nautilus_window_slot_set_status (view->details->slot,
-					 primary_status, detail_status);
-
-	g_free (primary_status);
-	g_free (detail_status);
+	g_signal_emit (view, signals[STATUS_CHANGED], 0);
 }
 
 static void
 nautilus_view_send_selection_change (NautilusView *view)
 {
 	g_signal_emit (view, signals[SELECTION_CHANGED], 0);
-
-	view->details->send_selection_change_to_shell = FALSE;
 }
 
 void
@@ -3074,9 +2885,7 @@ done_loading (NautilusView *view,
 		} else if (selection != NULL && all_files_seen) {
 			view->details->pending_selection = NULL;
 
-			view->details->selection_change_is_due_to_shell = TRUE;
 			nautilus_view_call_set_selection (view, selection);
-			view->details->selection_change_is_due_to_shell = FALSE;
 			g_list_free_full (selection, g_object_unref);
 			do_reveal = TRUE;
 		}
@@ -3099,7 +2908,7 @@ done_loading (NautilusView *view,
 				nautilus_view_reveal_selection (view);
 			}
 		}
-		nautilus_view_display_selection_info (view);
+		nautilus_view_send_status_change (view);
 	}
 
 	view->details->loading = FALSE;
@@ -3567,10 +3376,8 @@ display_selection_info_idle_callback (gpointer data)
 	g_object_ref (G_OBJECT (view));
 
 	view->details->display_selection_idle_id = 0;
-	nautilus_view_display_selection_info (view);
-	if (view->details->send_selection_change_to_shell) {
-		nautilus_view_send_selection_change (view);
-	}
+	nautilus_view_send_status_change (view);
+	nautilus_view_send_selection_change (view);
 
 	g_object_unref (G_OBJECT (view));
 
@@ -4055,17 +3862,13 @@ nautilus_view_create_links_for_files (NautilusView *view, GList *files,
  */
  
 static gboolean
-special_link_in_selection (NautilusView *view)
+special_link_in_selection (GList *selection)
 {
 	gboolean saw_link;
-	GList *selection, *node;
+	GList *node;
 	NautilusFile *file;
 
-	g_return_val_if_fail (NAUTILUS_IS_VIEW (view), FALSE);
-
 	saw_link = FALSE;
-
-	selection = nautilus_view_get_selection (NAUTILUS_VIEW (view));
 
 	for (node = selection; node != NULL; node = node->next) {
 		file = NAUTILUS_FILE (node->data);
@@ -4077,8 +3880,6 @@ special_link_in_selection (NautilusView *view)
 		}
 	}
 	
-	nautilus_file_list_free (selection);
-	
 	return saw_link;
 }
 
@@ -4088,17 +3889,13 @@ special_link_in_selection (NautilusView *view)
  */
  
 static gboolean
-desktop_or_home_dir_in_selection (NautilusView *view)
+desktop_or_home_dir_in_selection (GList *selection)
 {
 	gboolean saw_desktop_or_home_dir;
-	GList *selection, *node;
+	GList *node;
 	NautilusFile *file;
 
-	g_return_val_if_fail (NAUTILUS_IS_VIEW (view), FALSE);
-
 	saw_desktop_or_home_dir = FALSE;
-
-	selection = nautilus_view_get_selection (NAUTILUS_VIEW (view));
 
 	for (node = selection; node != NULL; node = node->next) {
 		file = NAUTILUS_FILE (node->data);
@@ -4111,8 +3908,6 @@ desktop_or_home_dir_in_selection (NautilusView *view)
 			break;
 		}
 	}
-	
-	nautilus_file_list_free (selection);
 	
 	return saw_desktop_or_home_dir;
 }
@@ -8425,14 +8220,87 @@ can_trash_all (GList *files)
 }
 
 static void
+nautilus_view_get_action_state_for_selection (NautilusView *view,
+					      GList *selection,
+					      gboolean *can_copy_out,
+					      gboolean *can_move_out,
+					      gboolean *can_open_out,
+					      gboolean *can_delete_out,
+					      gboolean *can_trash_out,
+					      gboolean *can_create_out,
+					      gboolean *can_link_out)
+{
+	gboolean can_copy;
+	gboolean can_move;
+	gboolean can_delete;
+	gboolean can_open;
+	gboolean can_link;
+	gboolean can_trash;
+	gboolean can_create;
+	gboolean has_special_link;
+	gboolean has_desktop_or_home_dir;
+	gboolean showing_recent;
+	gboolean showing_trash;
+	gint selection_count;
+
+	selection_count = g_list_length (selection);
+
+	has_special_link = special_link_in_selection (selection);
+	has_desktop_or_home_dir = desktop_or_home_dir_in_selection (selection);
+	showing_recent = showing_recent_directory (view);
+	showing_trash = showing_trash_directory (view);
+
+	can_copy = selection_count != 0
+		&& !has_special_link;
+	can_delete =
+		can_delete_all (selection) &&
+		selection_count != 0 &&
+		!has_special_link &&
+		!has_desktop_or_home_dir;
+	can_move = can_delete
+		&& !showing_recent;
+	can_open = selection_count != 0;
+	can_create = !nautilus_view_is_read_only (view)
+		&& !showing_trash
+		&& !showing_recent;
+	can_link = can_create
+		&& can_copy;
+	can_trash =
+		can_trash_all (selection) &&
+		selection_count != 0 &&
+		!has_special_link &&
+		!has_desktop_or_home_dir;
+
+	if (can_copy_out) {
+		*can_copy_out = can_copy;
+	}
+	if (can_move_out) {
+		*can_move_out = can_move;
+	}
+	if (can_open_out) {
+		*can_open_out = can_open;
+	}
+	if (can_delete_out) {
+		*can_delete_out = can_delete;
+	}
+	if (can_trash_out) {
+		*can_trash_out = can_trash;
+	}
+	if (can_create_out) {
+		*can_create_out = can_create;
+	}
+	if (can_link_out) {
+		*can_link_out = can_link;
+	}
+} 
+
+static void
 real_update_menus (NautilusView *view)
 {
 	GList *selection, *l;
 	gint selection_count;
 	const char *tip, *label;
 	char *label_with_underscore;
-	gboolean selection_contains_special_link;
-	gboolean selection_contains_desktop_or_home_dir;
 	gboolean selection_contains_recent;
 	gboolean can_create_files;
 	gboolean can_delete_files;
@@ -8455,28 +8323,17 @@ real_update_menus (NautilusView *view)
 	gboolean show_properties;
 
 	selection = nautilus_view_get_selection (view);
+	nautilus_view_get_action_state_for_selection (view, selection,
+						      &can_copy_files,
+						      &can_move_files,
+						      &can_open,
+						      &can_delete_files,
+						      &can_trash_files,
+						      &can_create_files,
+						      &can_link_files);
+
 	selection_count = g_list_length (selection);
-
-	selection_contains_special_link = special_link_in_selection (view);
-	selection_contains_desktop_or_home_dir = desktop_or_home_dir_in_selection (view);
 	selection_contains_recent = showing_recent_directory (view);
-
-	can_create_files = nautilus_view_supports_creating_files (view);
-	can_delete_files =
-		can_delete_all (selection) &&
-		selection_count != 0 &&
-		!selection_contains_special_link &&
-		!selection_contains_desktop_or_home_dir;
-	can_trash_files =
-		can_trash_all (selection) &&
-		selection_count != 0 &&
-		!selection_contains_special_link &&
-		!selection_contains_desktop_or_home_dir;
-	can_copy_files = selection_count != 0
-		&& !selection_contains_special_link;
-
-	can_move_files = can_delete_files && !selection_contains_recent;
-	can_link_files = can_create_files && can_copy_files;
 
 	action = gtk_action_group_get_action (view->details->dir_action_group,
 					      NAUTILUS_ACTION_RENAME);
@@ -8520,7 +8377,7 @@ real_update_menus (NautilusView *view)
 					      NAUTILUS_ACTION_OPEN);
 	gtk_action_set_sensitive (action, selection_count != 0);
 	
-	can_open = show_app = show_run = selection_count != 0;
+	show_app = show_run = selection_count != 0;
 
 	for (l = selection; l != NULL; l = l->next) {
 		NautilusFile *file;
@@ -9001,7 +8858,7 @@ update_status_idle_callback (gpointer data)
 	NautilusView *view;
 
 	view = NAUTILUS_VIEW (data);
-	nautilus_view_display_selection_info (view);
+	nautilus_view_send_status_change (view);
 	view->details->update_status_idle_id = 0;
 	return FALSE;
 }
@@ -9050,10 +8907,6 @@ nautilus_view_notify_selection_changed (NautilusView *view)
 	nautilus_file_list_free (selection);
 
 	view->details->selection_was_removed = FALSE;
-
-	if (!view->details->selection_change_is_due_to_shell) {
-		view->details->send_selection_change_to_shell = TRUE;
-	}
 
 	/* Schedule a display of the new selection. */
 	if (view->details->display_selection_idle_id == 0) {
@@ -9830,6 +9683,14 @@ nautilus_view_class_init (NautilusViewClass *klass)
 			      G_TYPE_NONE, 0);
 	signals[SELECTION_CHANGED] =
 		g_signal_new ("selection-changed",
+			      G_TYPE_FROM_CLASS (klass),
+			      G_SIGNAL_RUN_LAST,
+			      0,
+			      NULL, NULL,
+			      g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	signals[STATUS_CHANGED] =
+		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (klass),
 			      G_SIGNAL_RUN_LAST,
 			      0,
