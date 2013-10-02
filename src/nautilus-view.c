@@ -4333,6 +4333,37 @@ menu_item_show_image (GtkUIManager *ui_manager,
 	g_free (path);
 }
 
+static GIcon *
+get_force_size_icon_for_app (GAppInfo *app)
+{
+	GIcon *app_icon;
+	GdkPixbuf *pixbuf;
+	GtkIconInfo *icon_info;
+
+	app_icon = g_app_info_get_icon (app);
+	pixbuf = NULL;
+
+	if (app_icon != NULL) {
+		icon_info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (),
+							    app_icon,
+							    nautilus_get_icon_size_for_stock_size (GTK_ICON_SIZE_MENU),
+							    GTK_ICON_LOOKUP_FORCE_SIZE |
+							    GTK_ICON_LOOKUP_GENERIC_FALLBACK);
+		if (icon_info != NULL) {
+			pixbuf = gtk_icon_info_load_icon (icon_info, NULL);
+			g_object_unref (icon_info);
+		}
+	}
+
+	if (pixbuf != NULL) {
+		app_icon = G_ICON (pixbuf);
+	} else {
+		app_icon = NULL;
+	}
+
+	return app_icon;
+}
+
 static void
 add_application_to_open_with_menu (NautilusView *view,
 				   GAppInfo *application, 
@@ -4372,10 +4403,8 @@ add_application_to_open_with_menu (NautilusView *view,
 				 tip,
 				 NULL);
 
-	app_icon = g_app_info_get_icon (application);
-	if (app_icon != NULL) {
-		g_object_ref (app_icon);
-	} else {
+	app_icon = get_force_size_icon_for_app (application);
+	if (app_icon == NULL) {
 		app_icon = g_themed_icon_new ("application-x-executable");
 	}
 
@@ -8526,11 +8555,7 @@ real_update_menus (NautilusView *view)
 		escaped_app = eel_str_double_underscores (g_app_info_get_name (app));
 		label_with_underscore = g_strdup_printf (_("_Open With %s"),
 							 escaped_app);
-
-		app_icon = g_app_info_get_icon (app);
-		if (app_icon != NULL) {
-			g_object_ref (app_icon);
-		}
+		app_icon = get_force_size_icon_for_app (app);
 
 		g_free (escaped_app);
 		g_object_unref (app);
