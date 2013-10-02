@@ -71,8 +71,6 @@
 
 /* dock items */
 #define MAX_TITLE_LENGTH 180
-#define PATH_BAR_BOX_SPACING 6
-#define PATH_BAR_BOX_BORDER 12
 
 /* Forward and back buttons on the mouse */
 static gboolean mouse_extra_buttons = TRUE;

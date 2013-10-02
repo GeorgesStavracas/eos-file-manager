@@ -51,6 +51,9 @@
 #include <libnautilus-private/nautilus-profile.h>
 #include <libnautilus-extension/nautilus-location-widget-provider.h>
 
+#define PATH_BAR_BOX_SPACING 6
+#define PATH_BAR_BOX_BORDER 12
+
 G_DEFINE_TYPE (NautilusWindowSlot, nautilus_window_slot, GTK_TYPE_BOX);
 
 enum {
@@ -602,17 +605,17 @@ create_path_bar_box (NautilusWindowSlot *slot)
 {
 	GtkWidget *box;
 
-	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (box), 12);
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, PATH_BAR_BOX_SPACING);
+	gtk_container_set_border_width (GTK_CONTAINER (box), PATH_BAR_BOX_BORDER);
 	gtk_box_pack_end (GTK_BOX (slot), box, FALSE, FALSE, 0);
 	slot->details->status_box = box;
 
-	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, PATH_BAR_BOX_SPACING);
 	gtk_widget_set_hexpand (box, TRUE);
 	gtk_container_add (GTK_CONTAINER (slot->details->status_box), box);
 	slot->details->info_box = box;
 
-	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, PATH_BAR_BOX_SPACING);
 	gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
 	gtk_container_add (GTK_CONTAINER (slot->details->status_box), box);
 	slot->details->action_box = box;
