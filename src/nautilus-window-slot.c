@@ -604,20 +604,20 @@ create_path_bar_box (NautilusWindowSlot *slot)
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_container_set_border_width (GTK_CONTAINER (box), 12);
-	gtk_box_pack_end (GTK_BOX (slot), box,
-			  FALSE, FALSE, 0);
+	gtk_box_pack_end (GTK_BOX (slot), box, FALSE, FALSE, 0);
 	slot->details->status_box = box;
 
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (slot->details->status_box), box, TRUE, TRUE, 0);
+	gtk_widget_set_hexpand (box, TRUE);
+	gtk_container_add (GTK_CONTAINER (slot->details->status_box), box);
 	slot->details->info_box = box;
 
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (slot->details->status_box), box, TRUE, TRUE, 0);
+	gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
+	gtk_container_add (GTK_CONTAINER (slot->details->status_box), box);
 	slot->details->action_box = box;
 
 	slot->details->path_bar = g_object_new (NAUTILUS_TYPE_PATH_BAR, NULL);
-	gtk_widget_set_hexpand (slot->details->path_bar, TRUE);
 	gtk_box_pack_end (GTK_BOX (slot->details->info_box),
 			  slot->details->path_bar, FALSE, FALSE, 0);
 
@@ -2384,11 +2384,38 @@ view_begin_loading_cb (NautilusView       *view,
 }
 
 static void
-view_status_changed_cb (NautilusView *view,
-			NautilusWindowSlot *slot)
+pack_button (GtkWidget *container,
+	     GtkActionGroup *action_group,
+	     const gchar *action_name,
+	     const gchar *label)
 {
+	GtkAction *action;
+	GtkWidget *button;
 
-	update_status_box (slot);
+	button = gtk_button_new_with_label (label);
+	action = gtk_action_group_get_action (action_group, action_name);
+	gtk_activatable_set_use_action_appearance (GTK_ACTIVATABLE (button), FALSE);
+	gtk_activatable_set_related_action (GTK_ACTIVATABLE (button), action);
+
+	gtk_container_add (GTK_CONTAINER (container), button);
+}
+
+static void
+update_action_box_for_selection (NautilusWindowSlot *slot,
+				 NautilusView *view)
+{
+	GtkActionGroup *action_group;
+
+	action_group = nautilus_view_get_action_group (view);
+
+	pack_button (slot->details->action_box, action_group,
+		     NAUTILUS_ACTION_COPY_TO, _("Copy"));
+	pack_button (slot->details->action_box, action_group,
+		     NAUTILUS_ACTION_MOVE_TO, _("Move"));
+	pack_button (slot->details->action_box, action_group,
+		     NAUTILUS_ACTION_OPEN, _("Open"));
+
+	gtk_widget_show_all (slot->details->action_box);
 }
 
 static GtkWidget *
@@ -2434,10 +2461,10 @@ create_header_line (const gchar *string)
 }
 
 static void
-update_status_box_for_selection (NautilusWindowSlot *slot)
+update_status_box_for_selection (NautilusWindowSlot *slot,
+				 NautilusView *view,
+				 GList *selection)
 {
-	NautilusView *view;
-	GList *selection;
 	goffset non_folder_size;
 	gboolean non_folder_size_known;
 	gboolean folder_item_count_known;
@@ -2456,8 +2483,7 @@ update_status_box_for_selection (NautilusWindowSlot *slot)
 	GtkWidget *box, *w, *image;
 	GdkPixbuf *pixbuf;
 
-	view = nautilus_window_slot_get_current_view (slot);
-	selection = nautilus_view_get_selection (view);
+	update_action_box_for_selection (slot, view);
 
 	selection_count = 0;
 	folder_count = 0;
@@ -2598,7 +2624,6 @@ update_status_box_for_empty_selection (NautilusWindowSlot *slot)
 	GtkWidget *button, *box;
 
 	button = gtk_button_new ();
-	gtk_widget_set_halign (button, GTK_ALIGN_END);
 	gtk_container_add (GTK_CONTAINER (slot->details->action_box), button);
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
@@ -2619,7 +2644,7 @@ update_status_box (NautilusWindowSlot *slot)
 {
 	NautilusView *view;
 	GtkWidget *child;
-	GList *children, *l;
+	GList *children, *l, *selection;
 
 	children = gtk_container_get_children (GTK_CONTAINER (slot->details->info_box));
 	for (l = children; l != NULL; l = l->next) {
@@ -2637,13 +2662,28 @@ update_status_box (NautilusWindowSlot *slot)
 	}
 	g_list_free (children);
 
+	selection = NULL;
 	view = nautilus_window_slot_get_current_view (slot);
-	if (view == NULL ||
-	    nautilus_view_get_selection_count (view) == 0) {
-		update_status_box_for_empty_selection (slot);
-	} else {
-		update_status_box_for_selection (slot);
+
+	if (view != NULL) {
+		selection = nautilus_view_get_selection (view);
 	}
+
+	if (selection != NULL) {
+		update_status_box_for_selection (slot, view, selection);
+	} else {
+		update_status_box_for_empty_selection (slot);
+	}
+
+	nautilus_file_list_free (selection);
+}
+
+static void
+view_status_changed_cb (NautilusView *view,
+			NautilusWindowSlot *slot)
+{
+
+	update_status_box (slot);
 }
 
 static void
