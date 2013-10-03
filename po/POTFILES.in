@@ -1,10 +1,10 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 [encoding: UTF-8]
-data/nautilus-autorun-software.desktop.in.in
-data/nautilus-connect-server.desktop.in.in
-data/nautilus.desktop.in.in
-data/nautilus.xml.in
+data/eos-file-manager-autorun-software.desktop.in.in
+data/eos-file-manager-connect-server.desktop.in.in
+data/eos-file-manager.desktop.in.in
+data/eos-file-manager.xml.in
 eel/eel-canvas.c
 eel/eel-editable-label.c
 eel/eel-glib-extensions.c
