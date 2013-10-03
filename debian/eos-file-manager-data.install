@@ -1,0 +1,6 @@
+usr/share/gnome-shell
+usr/share/eos-file-manager
+usr/share/locale
+usr/share/mime/packages/eos-file-manager.xml
+usr/share/GConf
+usr/share/glib-2.0/schemas/org.gnome.nautilus.gschema.xml
