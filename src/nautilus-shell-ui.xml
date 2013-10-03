@@ -56,8 +56,6 @@
   <separator/>
   <placeholder name="Layout Options"/>
   <separator/>
-  <menuitem name="Show Hide Sidebar" action="Show Hide Sidebar"/>
-  <separator/>
   <placeholder name="View Preferences"/>
   <separator/>
   <placeholder name="View Details"/>
@@ -69,11 +67,6 @@
   <menuitem name="LocationProperties" action="LocationProperties"/>
   <separator/>
   <placeholder name="Extension Actions"/>
-  <separator/>
-  <placeholder name="Close Items Placeholder">
-    <menuitem name="Close All Windows" action="Close All Windows"/>
-  </placeholder>
-  <menuitem name="Close" action="Close"/>
   <separator/>
   <menuitem name="About" action="About Nautilus"/>
   <menu action="Help">

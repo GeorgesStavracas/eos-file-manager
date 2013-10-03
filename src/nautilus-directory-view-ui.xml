@@ -4,6 +4,9 @@
 <accelerator action="OpenCloseParent"/>
 <accelerator action="PropertiesAccel"/>
 <accelerator action="RenameSelectAll"/>
+<accelerator action="New Folder"/>
+<accelerator action="Close"/>
+<accelerator action="Close All Windows"/>
 <!-- These all belong to ViewMenu -->
 <popup name="ActionMenu" accelerators="true">
   <placeholder name="View Details">
@@ -14,8 +17,6 @@
 <!-- End of ViewMenu -->
 <popup name="ActionMenu" accelerators="true">
   <placeholder name="New Items Placeholder">
-    <menuitem name="New Folder" action="New Folder"/>
-    <menuitem name="New Folder with Selection" action="New Folder with Selection"/>
     <menu action="New Documents">
       <placeholder name="New Documents Placeholder"/>
     </menu>
