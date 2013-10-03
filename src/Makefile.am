@@ -240,7 +240,7 @@ BUILT_SOURCES = 					\
 	$(dbus_shell_search_provider_built_sources) 	\
 	$(NULL)
 
-TESTS=check-nautilus
+TESTS=check-eos-file-manager
 
 @INTLTOOL_SERVER_RULE@
 
@@ -254,7 +254,7 @@ EXTRA_DIST =					\
 	$(resource_files)			\
 	$(server_in_files)			\
 	eos-file-manager.gresource.xml		\
-	check-nautilus				\
+	check-eos-file-manager			\
 	$(NULL)
 
 dist-hook:
