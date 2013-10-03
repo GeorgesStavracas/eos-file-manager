@@ -1,0 +1,7 @@
+usr/bin
+usr/lib/eos-file-manager/eos-file-manager-convert-metadata
+usr/lib/eos-file-manager/extensions-3.0/*.so
+usr/share/applications
+usr/share/dbus-1
+usr/share/man
+etc/xdg/autostart
