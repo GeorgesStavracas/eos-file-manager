@@ -22,8 +22,6 @@
 <popup name="ActionMenu" accelerators="true">
   <menuitem name="New Window" action="New Window"/>
   <separator/>
-  <placeholder name="Open Placeholder"/>
-  <separator/>
   <placeholder name="Global File Items Placeholder"/>
   <separator/>
   <placeholder name="Undostack Actions"/>
