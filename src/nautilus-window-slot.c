@@ -2491,6 +2491,8 @@ update_status_box_for_selection (NautilusWindowSlot *slot,
 	GtkWidget *box, *w, *image;
 	GdkPixbuf *pixbuf;
 
+	gtk_widget_hide (slot->details->path_bar);
+
 	update_action_box_for_selection (slot, view);
 
 	selection_count = 0;
@@ -2630,6 +2632,8 @@ static void
 update_status_box_for_empty_selection (NautilusWindowSlot *slot)
 {
 	GtkWidget *button, *box;
+
+	gtk_widget_show (slot->details->path_bar);
 
 	button = gtk_button_new ();
 	gtk_container_add (GTK_CONTAINER (slot->details->action_box), button);
