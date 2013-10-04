@@ -9,10 +9,12 @@
 <accelerator action="Close All Windows"/>
 <!-- These all belong to ViewMenu -->
 <popup name="ActionMenu" accelerators="true">
-  <placeholder name="View Details">
-    <menuitem name="Reset to Defaults" action="Reset to Defaults"/>
-    <menuitem name="Show Hidden Files" action="Show Hidden Files"/>
-  </placeholder>
+  <menu action="Advanced">
+    <placeholder name="View Details">
+      <menuitem name="Reset to Defaults" action="Reset to Defaults"/>
+      <menuitem name="Show Hidden Files" action="Show Hidden Files"/>
+    </placeholder>
+  </menu>
 </popup>
 <!-- End of ViewMenu -->
 <popup name="ActionMenu" accelerators="true">
@@ -26,18 +28,18 @@
     <menuitem name="Save Search" action="Save Search"/>
     <menuitem name="Save Search As" action="Save Search As"/>
   </placeholder>
-  <placeholder name="Edit Actions">
-    <placeholder name="Undostack Actions">
-      <menuitem name="Undo" action="Undo"/>
-      <menuitem name="Redo" action="Redo"/>
-      <menuitem name="Paste" action="Paste"/>
-    </placeholder>
+  <placeholder name="Undostack Actions">
+    <menuitem name="Undo" action="Undo"/>
+    <menuitem name="Redo" action="Redo"/>
+    <menuitem name="Paste" action="Paste"/>
+  </placeholder>
+  <menu action="Advanced">
     <placeholder name="Select Items">
       <menuitem name="Select All" action="Select All"/>
       <menuitem name="Select Pattern" action="Select Pattern"/>
       <menuitem name="Invert Selection" action="Invert Selection"/>
     </placeholder>
-  </placeholder>
+  </menu>
 </popup>
 <popup name="background">
   <placeholder name="Before Zoom Items">

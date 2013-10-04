@@ -454,6 +454,7 @@ action_view_radio_changed (GtkRadioAction *action,
 
 static const GtkActionEntry main_entries[] = {
   /* name, stock id, label */  { "Help", NULL, N_("_Help") },
+  /* name, stock id, label */  { "Advanced", NULL, N_("Advanced") },
   /* name, stock id */         { NAUTILUS_ACTION_CLOSE, GTK_STOCK_CLOSE,
   /* label, accelerator */       N_("_Close"), "<control>W",
   /* tooltip */                  N_("Close this folder"),
