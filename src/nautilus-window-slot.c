@@ -144,7 +144,6 @@ static void nautilus_window_slot_force_reload (NautilusWindowSlot *slot);
 static void location_has_really_changed (NautilusWindowSlot *slot);
 static void nautilus_window_slot_connect_new_content_view (NautilusWindowSlot *slot);
 static void nautilus_window_slot_emit_location_change (NautilusWindowSlot *slot, GFile *from, GFile *to);
-static void nautilus_window_slot_set_status (NautilusWindowSlot *slot, const char *primary_status, const char *detail_status);
 static void update_status_box (NautilusWindowSlot *slot);
 
 static void
@@ -973,7 +972,6 @@ begin_location_change (NautilusWindowSlot *slot,
 	end_location_change (slot);
 
 	nautilus_window_slot_set_allow_stop (slot, TRUE);
-	nautilus_window_slot_set_status (slot, NULL, NULL);
 
 	g_assert (slot->details->pending_location == NULL);
 	g_assert (slot->details->pending_selection == NULL);
@@ -2232,6 +2230,7 @@ nautilus_window_slot_update_for_new_location (NautilusWindowSlot *slot)
 
 	if (location_really_changed) {
 		nautilus_window_slot_remove_extra_location_widgets (slot);
+		update_status_box (slot);
 
 		directory = nautilus_directory_get (new_location);
 
@@ -2351,11 +2350,6 @@ static void
 setup_loading_floating_bar (NautilusWindowSlot *slot)
 {
 	/* setup loading overlay */
-	if (slot->details->set_status_timeout_id != 0) {
-		g_source_remove (slot->details->set_status_timeout_id);
-		slot->details->set_status_timeout_id = 0;
-	}
-
 	if (slot->details->loading_timeout_id != 0) {
 		g_source_remove (slot->details->loading_timeout_id);
 		slot->details->loading_timeout_id = 0;
@@ -2490,6 +2484,8 @@ update_status_box_for_selection (NautilusWindowSlot *slot,
 	NautilusFile *file;
 	GtkWidget *box, *w, *image;
 	GdkPixbuf *pixbuf;
+
+	gtk_widget_hide (slot->details->path_bar);
 
 	update_action_box_for_selection (slot, view);
 
@@ -2631,6 +2627,8 @@ update_status_box_for_empty_selection (NautilusWindowSlot *slot)
 {
 	GtkWidget *button, *box;
 
+	gtk_widget_show (slot->details->path_bar);
+
 	button = gtk_button_new ();
 	gtk_container_add (GTK_CONTAINER (slot->details->action_box), button);
 
@@ -2648,11 +2646,22 @@ update_status_box_for_empty_selection (NautilusWindowSlot *slot)
 }
 
 static void
+update_status_box_cancel_pending (NautilusWindowSlot *slot)
+{
+	if (slot->details->set_status_timeout_id != 0) {
+		g_source_remove (slot->details->set_status_timeout_id);
+		slot->details->set_status_timeout_id = 0;
+	}
+}
+
+static void
 update_status_box (NautilusWindowSlot *slot)
 {
 	NautilusView *view;
 	GtkWidget *child;
 	GList *children, *l, *selection;
+
+	update_status_box_cancel_pending (slot);
 
 	children = gtk_container_get_children (GTK_CONTAINER (slot->details->info_box));
 	for (l = children; l != NULL; l = l->next) {
@@ -2686,12 +2695,45 @@ update_status_box (NautilusWindowSlot *slot)
 	nautilus_file_list_free (selection);
 }
 
+static gboolean
+update_status_box_timeout_cb (gpointer user_data)
+{
+	NautilusWindowSlot *slot = user_data;
+
+	slot->details->set_status_timeout_id = 0;
+	update_status_box (slot);
+	
+	return FALSE;
+}
+
+static void
+queue_update_status_box (NautilusWindowSlot *slot)
+{
+	GtkSettings *settings;
+	gint double_click_time;
+
+	update_status_box_cancel_pending (slot);
+
+	settings = gtk_settings_get_for_screen (gtk_widget_get_screen (GTK_WIDGET (slot)));
+	g_object_get (settings,
+		      "gtk-double-click-time", &double_click_time,
+		      NULL);
+
+	/* waiting for half of the double-click-time before setting
+	 * the status seems to be a good approximation of not setting it
+	 * too often and not delaying the statusbar too much.
+	 */
+	slot->details->set_status_timeout_id =
+		g_timeout_add ((guint) (double_click_time / 2),
+			       update_status_box_timeout_cb, slot);
+}
+
 static void
 view_status_changed_cb (NautilusView *view,
 			NautilusWindowSlot *slot)
 {
 
-	update_status_box (slot);
+	queue_update_status_box (slot);
 }
 
 static void
@@ -2814,6 +2856,8 @@ nautilus_window_slot_dispose (GObject *object)
 		g_object_unref (slot->details->new_content_view);
 		slot->details->new_content_view = NULL;
 	}
+
+	update_status_box_cancel_pending (slot);
 
 	if (slot->details->set_status_timeout_id != 0) {
 		g_source_remove (slot->details->set_status_timeout_id);
@@ -3031,109 +3075,6 @@ nautilus_window_slot_stop_loading (NautilusWindowSlot *slot)
 	}
 
         cancel_location_change (slot);
-}
-
-static void
-real_slot_set_short_status (NautilusWindowSlot *slot,
-			    const gchar *primary_status,
-			    const gchar *detail_status)
-{
-	gboolean disable_chrome;
-
-	nautilus_floating_bar_cleanup_actions (NAUTILUS_FLOATING_BAR (slot->details->floating_bar));
-	nautilus_floating_bar_set_show_spinner (NAUTILUS_FLOATING_BAR (slot->details->floating_bar),
-						FALSE);
-
-	g_object_get (nautilus_window_slot_get_window (slot),
-		      "disable-chrome", &disable_chrome,
-		      NULL);
-
-	if ((primary_status == NULL && detail_status == NULL) || disable_chrome) {
-		gtk_widget_hide (slot->details->floating_bar);
-		return;
-	}
-
-	nautilus_floating_bar_set_labels (NAUTILUS_FLOATING_BAR (slot->details->floating_bar),
-					  primary_status, detail_status);
-	gtk_widget_show (slot->details->floating_bar);
-}
-
-typedef struct {
-	gchar *primary_status;
-	gchar *detail_status;
-	NautilusWindowSlot *slot;
-} SetStatusData;
-
-static void
-set_status_data_free (gpointer data)
-{
-	SetStatusData *status_data = data;
-
-	g_free (status_data->primary_status);
-	g_free (status_data->detail_status);
-
-	g_slice_free (SetStatusData, data);
-}
-
-static gboolean
-set_status_timeout_cb (gpointer data)
-{
-	SetStatusData *status_data = data;
-
-	status_data->slot->details->set_status_timeout_id = 0;
-	real_slot_set_short_status (status_data->slot,
-				    status_data->primary_status,
-				    status_data->detail_status);
-
-	return FALSE;
-}
-
-static void
-set_floating_bar_status (NautilusWindowSlot *slot,
-			 const gchar *primary_status,
-			 const gchar *detail_status)
-{
-	GtkSettings *settings;
-	gint double_click_time;
-	SetStatusData *status_data;
-
-	if (slot->details->set_status_timeout_id != 0) {
-		g_source_remove (slot->details->set_status_timeout_id);
-		slot->details->set_status_timeout_id = 0;
-	}
-
-	settings = gtk_settings_get_for_screen (gtk_widget_get_screen (GTK_WIDGET (slot->details->content_view)));
-	g_object_get (settings,
-		      "gtk-double-click-time", &double_click_time,
-		      NULL);
-
-	status_data = g_slice_new0 (SetStatusData);
-	status_data->primary_status = g_strdup (primary_status);
-	status_data->detail_status = g_strdup (detail_status);
-	status_data->slot = slot;
-
-	/* waiting for half of the double-click-time before setting
-	 * the status seems to be a good approximation of not setting it
-	 * too often and not delaying the statusbar too much.
-	 */
-	slot->details->set_status_timeout_id =
-		g_timeout_add_full (G_PRIORITY_DEFAULT,
-				    (guint) (double_click_time / 2),
-				    set_status_timeout_cb,
-				    status_data,
-				    set_status_data_free);
-}
-
-static void
-nautilus_window_slot_set_status (NautilusWindowSlot *slot,
-				 const char *primary_status,
-				 const char *detail_status)
-{
-	g_assert (NAUTILUS_IS_WINDOW_SLOT (slot));
-
-	if (slot->details->content_view != NULL) {
-		set_floating_bar_status (slot, primary_status, detail_status);
-	}
 }
 
 /* returns either the pending or the actual current uri */
