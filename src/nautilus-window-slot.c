@@ -2460,7 +2460,12 @@ create_label_line (const gchar *title,
 static GtkWidget *
 create_header_line (const gchar *string)
 {
-	return create_line ("<b>%s</b>", NULL, string);
+	GtkWidget *header;
+
+	header = create_line ("<b>%s</b>", NULL, string);
+	gtk_label_set_ellipsize (GTK_LABEL (header), PANGO_ELLIPSIZE_MIDDLE);
+
+	return header;
 }
 
 static void

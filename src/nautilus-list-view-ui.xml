@@ -1,9 +1,11 @@
 <ui>
   <!-- These all belong to ViewMenu -->
   <popup name="ActionMenu" accelerators="true">
-    <placeholder name="View Details">
-      <menuitem name="Visible Columns" action="Visible Columns"/>
-    </placeholder>
+    <menu action="Advanced">
+      <placeholder name="View Details">
+        <menuitem name="Visible Columns" action="Visible Columns"/>
+      </placeholder>
+    </menu>
   </popup>
   <!-- End of ViewMenu -->
 </ui>

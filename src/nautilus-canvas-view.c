@@ -1150,6 +1150,10 @@ nautilus_canvas_view_start_renaming_file (NautilusView *view,
 		(get_canvas_container (NAUTILUS_CANVAS_VIEW (view)), select_all);
 }
 
+static const GtkActionEntry canvas_view_entries[] = {
+	{ "Sort", NULL, N_("Sort") }
+};
+
 static const GtkToggleActionEntry canvas_view_toggle_entries[] = {
   /* name, stock id */      { "Reversed Order", NULL,
   /* label, accelerator */    N_("Re_versed Order"), NULL,
@@ -1212,6 +1216,10 @@ nautilus_canvas_view_merge_menus (NautilusView *view)
 	action_group = gtk_action_group_new ("CanvasViewActions");
 	gtk_action_group_set_translation_domain (action_group, GETTEXT_PACKAGE);
 	canvas_view->details->canvas_action_group = action_group;
+	gtk_action_group_add_actions (action_group,
+				      canvas_view_entries,
+				      G_N_ELEMENTS (canvas_view_entries),
+				      canvas_view);
 	gtk_action_group_add_toggle_actions (action_group, 
 					     canvas_view_toggle_entries, G_N_ELEMENTS (canvas_view_toggle_entries),
 					     canvas_view);

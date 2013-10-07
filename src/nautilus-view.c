@@ -4164,7 +4164,6 @@ add_application_to_open_with_menu (NautilusView *view,
 				   GAppInfo *application, 
 				   GList *files,
 				   int index,
-				   const char *menu_placeholder,
 				   const char *popup_placeholder,
 				   const gboolean submenu)
 {
@@ -4339,7 +4338,6 @@ reset_open_with_menu (NautilusView *view, GList *selection)
 
 	for (node = applications, index = 0; node != NULL; node = node->next, index++) {
 		GAppInfo *application;
-		char *menu_path;
 		char *popup_path;
 		
 		application = node->data;
@@ -4349,26 +4347,16 @@ reset_open_with_menu (NautilusView *view, GList *selection)
 		}
 
 		if (submenu_visible) {
-			menu_path = NAUTILUS_VIEW_MENU_PATH_APPLICATIONS_SUBMENU_PLACEHOLDER;
 			popup_path = NAUTILUS_VIEW_POPUP_PATH_APPLICATIONS_SUBMENU_PLACEHOLDER;
 		} else {
-			menu_path = NAUTILUS_VIEW_MENU_PATH_APPLICATIONS_PLACEHOLDER;
 			popup_path = NAUTILUS_VIEW_POPUP_PATH_APPLICATIONS_PLACEHOLDER;
 		}
 
-		gtk_ui_manager_add_ui (nautilus_view_get_ui_manager (view),
-				       view->details->open_with_merge_id,
-				       menu_path,
-				       "separator",
-				       NULL,
-				       GTK_UI_MANAGER_SEPARATOR,
-				       FALSE);
-				       
 		add_application_to_open_with_menu (view, 
 						   node->data, 
 						   selection, 
 						   index, 
-						   menu_path, popup_path, submenu_visible);
+						   popup_path, submenu_visible);
 	}
 	g_list_free_full (applications, g_object_unref);
 	if (default_app != NULL) {
@@ -6941,8 +6929,8 @@ static const GtkActionEntry directory_view_entries[] = {
   /* name, stock id, label */  { NAUTILUS_ACTION_NEW_DOCUMENTS, "document-new", N_("New _Document") },
   /* name, stock id, label */  { NAUTILUS_ACTION_OPEN_WITH, NULL, N_("Open Wit_h"),
 				 NULL, N_("Choose a program with which to open the selected item") },
-  /* name, stock id */         { NAUTILUS_ACTION_PROPERTIES, GTK_STOCK_PROPERTIES,
-  /* label, accelerator */       N_("P_roperties"), "<alt>Return",
+  /* name, stock id */         { NAUTILUS_ACTION_PROPERTIES, NULL,
+  /* label, accelerator */       N_("Information"), "<alt>Return",
   /* tooltip */                  N_("View or modify the properties of each selected item"),
 				 G_CALLBACK (action_properties_callback) },
   /* name, stock id */         { "PropertiesAccel", NULL,
