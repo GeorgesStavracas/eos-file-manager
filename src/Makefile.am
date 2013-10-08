@@ -165,6 +165,8 @@ eos_file_manager_SOURCES = \
 	nautilus-mime-actions.h 		\
 	nautilus-notebook.c			\
 	nautilus-notebook.h			\
+	nautilus-option-menu-item.c		\
+	nautilus-option-menu-item.h		\
 	nautilus-pathbar.c			\
 	nautilus-pathbar.h			\
 	nautilus-places-sidebar.c		\
