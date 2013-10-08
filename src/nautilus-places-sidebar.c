@@ -116,6 +116,7 @@ typedef struct {
 struct SidebarTreeData {
 	GtkTreeView *tree_view;
 	GtkTreeStore *store;
+	GtkCellRenderer *normal_text_cell_renderer;
 	GtkCellRenderer *eject_icon_cell_renderer;
 	NautilusPlacesSidebar *sidebar;
 
@@ -2055,7 +2056,6 @@ rename_selected_bookmark (NautilusPlacesSidebar *sidebar)
 	GtkTreePath *path;
 	GtkTreeViewColumn *column;
 	GtkCellRenderer *cell;
-	GList *renderers;
 	PlaceType type;
 	SidebarTreeData *data;
 	
@@ -2070,9 +2070,7 @@ rename_selected_bookmark (NautilusPlacesSidebar *sidebar)
 
 		path = gtk_tree_model_get_path (GTK_TREE_MODEL (data->store), &iter);
 		column = gtk_tree_view_get_column (GTK_TREE_VIEW (data->tree_view), 0);
-		renderers = gtk_cell_layout_get_cells (GTK_CELL_LAYOUT (column));
-		cell = g_list_nth_data (renderers, 6);
-		g_list_free (renderers);
+		cell = data->normal_text_cell_renderer;
 		g_object_set (cell, "editable", TRUE, NULL);
 		gtk_tree_view_set_cursor_on_cell (GTK_TREE_VIEW (data->tree_view),
 						  path, column, cell, TRUE);
@@ -3395,6 +3393,7 @@ setup_tree_view (NautilusPlacesSidebar *sidebar)
 
 	/* normal text renderer */
 	cell = gtk_cell_renderer_text_new ();
+	data->normal_text_cell_renderer = cell;
 	gtk_tree_view_column_pack_start (col, cell, TRUE);
 	g_object_set (G_OBJECT (cell), "editable", FALSE, NULL);
 	gtk_tree_view_column_set_attributes (col, cell,
