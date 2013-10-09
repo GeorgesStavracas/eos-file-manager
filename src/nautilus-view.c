@@ -36,6 +36,7 @@
 #include "nautilus-error-reporting.h"
 #include "nautilus-list-view.h"
 #include "nautilus-mime-actions.h"
+#include "nautilus-option-menu-item.h"
 #include "nautilus-previewer.h"
 #include "nautilus-properties-window.h"
 
@@ -114,6 +115,7 @@
 #define NAUTILUS_VIEW_MENU_PATH_EXTENSION_ACTIONS_PLACEHOLDER     "/ActionMenu/Edit/Extension Actions"
 #define NAUTILUS_VIEW_MENU_PATH_NEW_DOCUMENTS_PLACEHOLDER  	  "/ActionMenu/New Items Placeholder/New Documents/New Documents Placeholder"
 #define NAUTILUS_VIEW_MENU_PATH_OPEN				  "/ActionMenu/Open Placeholder/Open"
+#define NAUTILUS_VIEW_MENU_PATH_UNDO				  "/ActionMenu/Undostack Actions/Undo Options"
 
 #define NAUTILUS_VIEW_POPUP_PATH_SELECTION			  "/selection"
 #define NAUTILUS_VIEW_POPUP_PATH_APPLICATIONS_SUBMENU_PLACEHOLDER "/selection/Open Placeholder/Open With/Applications Placeholder"
@@ -7233,6 +7235,30 @@ pre_activate (NautilusView *view,
 }
 
 static void
+populate_option_menu_items (NautilusView *view)
+{
+	GtkWidget *undo_menu_item;
+	GtkActionGroup *action_group;
+	GtkUIManager *ui_manager;
+	GtkAction *action;
+
+	action_group = view->details->dir_action_group;
+	ui_manager = nautilus_view_get_ui_manager (view);
+
+	undo_menu_item = gtk_ui_manager_get_widget (ui_manager, NAUTILUS_VIEW_MENU_PATH_UNDO);
+
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_UNDO);
+	nautilus_option_menu_item_add_action (NAUTILUS_OPTION_MENU_ITEM (undo_menu_item),
+					      action);
+
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_REDO);
+	nautilus_option_menu_item_add_action (NAUTILUS_OPTION_MENU_ITEM (undo_menu_item),
+					      action);
+}
+
+static void
 real_merge_menus (NautilusView *view)
 {
 	GtkActionGroup *action_group;
@@ -7259,6 +7285,11 @@ real_merge_menus (NautilusView *view)
 	g_object_unref (action);
 	g_free (tooltip);
 
+	action = nautilus_option_menu_action_new ("Undo Options",
+						  _("Edit"), _("Undo Options"), NULL);
+	gtk_action_group_add_action (action_group, action);
+	g_object_unref (action);
+
 	g_signal_connect_object (action_group, "pre-activate",
 				 G_CALLBACK (pre_activate), G_OBJECT (view),
 				 G_CONNECT_SWAPPED);
@@ -7268,6 +7299,9 @@ real_merge_menus (NautilusView *view)
 	g_object_unref (action_group); /* owned by ui manager */
 
 	view->details->dir_merge_id = gtk_ui_manager_add_ui_from_resource (ui_manager, "/org/gnome/nautilus/nautilus-directory-view-ui.xml", NULL);
+
+	/* set actions for option menu items */
+	populate_option_menu_items (view);
 	
 	view->details->scripts_invalid = TRUE;
 	view->details->templates_invalid = TRUE;

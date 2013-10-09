@@ -29,8 +29,9 @@
     <menuitem name="Save Search As" action="Save Search As"/>
   </placeholder>
   <placeholder name="Undostack Actions">
-    <menuitem name="Undo" action="Undo"/>
-    <menuitem name="Redo" action="Redo"/>
+    <menuitem name="Undo Options" action="Undo Options"/>
+  </placeholder>
+  <placeholder name="Edit Actions">
     <menuitem name="Paste" action="Paste"/>
   </placeholder>
   <menu action="Advanced">

@@ -36,6 +36,7 @@
 #include "nautilus-file-management-properties.h"
 #include "nautilus-list-view.h"
 #include "nautilus-notebook.h"
+#include "nautilus-option-menu-item.h"
 #include "nautilus-window-private.h"
 #include "nautilus-desktop-window.h"
 #include "nautilus-properties-window.h"
@@ -61,6 +62,7 @@
 #include <string.h>
 
 #define MENU_PATH_EXTENSION_ACTIONS                     "/ActionMenu/Extension Actions"
+#define MENU_PATH_ZOOM_ITEM                             "/ActionMenu/Zoom Items Placeholder/Zoom Options"
 #define POPUP_PATH_EXTENSION_ACTIONS                     "/background/Before Zoom Items/Extension Actions"
 
 #define NETWORK_URI          "network:"
@@ -327,7 +329,11 @@ connect_proxy_cb (GtkActionGroup *action_group,
 	if (!GTK_IS_MENU_ITEM (proxy))
 		return;
 
-	label = GTK_LABEL (gtk_bin_get_child (GTK_BIN (proxy)));
+	if (NAUTILUS_IS_OPTION_MENU_ITEM (proxy)) {
+		label = GTK_LABEL (nautilus_option_menu_item_get_label (NAUTILUS_OPTION_MENU_ITEM (proxy)));
+	} else {
+		label = GTK_LABEL (gtk_bin_get_child (GTK_BIN (proxy)));
+	}
 
 	gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_END);
 	gtk_label_set_max_width_chars (label, MENU_ITEM_MAX_WIDTH_CHARS);
@@ -661,6 +667,33 @@ nautilus_window_menus_set_visibility_for_app_menu (NautilusWindow *window)
 	}
 }
 
+static void
+populate_option_menu_items (NautilusWindow *window)
+{
+	GtkWidget *zoom_menu_item;
+	GtkActionGroup *action_group;
+	GtkAction *action;
+
+	action_group = window->details->main_action_group;
+	zoom_menu_item = gtk_ui_manager_get_widget (window->details->ui_manager,
+						    MENU_PATH_ZOOM_ITEM);
+
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_ZOOM_OUT);
+	nautilus_option_menu_item_add_action (NAUTILUS_OPTION_MENU_ITEM (zoom_menu_item),
+					      action);
+
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_ZOOM_NORMAL);
+	nautilus_option_menu_item_add_action (NAUTILUS_OPTION_MENU_ITEM (zoom_menu_item),
+					      action);
+
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_ZOOM_IN);
+	nautilus_option_menu_item_add_action (NAUTILUS_OPTION_MENU_ITEM (zoom_menu_item),
+					      action);
+}
+
 /**
  * nautilus_window_initialize_menus
  * 
@@ -692,6 +725,11 @@ nautilus_window_initialize_menus (NautilusWindow *window)
 					    view_radio_entries, G_N_ELEMENTS (view_radio_entries),
 					    -1, G_CALLBACK (action_view_radio_changed),
 					    window);
+
+	action = nautilus_option_menu_action_new ("Zoom Options",
+						  _("Zoom"), _("Zoom Options"), NULL);
+	gtk_action_group_add_action (action_group, action);
+	g_object_unref (action);
 
 	nautilus_window_menus_set_visibility_for_app_menu (window);
 	window->details->app_menu_visibility_id =
@@ -739,6 +777,9 @@ nautilus_window_initialize_menus (NautilusWindow *window)
 
 	/* add the UI */
 	gtk_ui_manager_add_ui_from_resource (ui_manager, "/org/gnome/nautilus/nautilus-shell-ui.xml", NULL);
+
+	/* set actions for option menu items */
+	populate_option_menu_items (window);
 }
 
 void
