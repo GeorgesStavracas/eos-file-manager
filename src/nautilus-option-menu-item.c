@@ -37,6 +37,7 @@ static guint signals[NUM_SIGNALS] = { 0, };
 
 struct _NautilusOptionMenuItemPriv {
   GHashTable *options;
+  GHashTable *actions;
 
   GtkWidget *hbox;
   GtkWidget *label_widget;
@@ -44,6 +45,7 @@ struct _NautilusOptionMenuItemPriv {
 };
 
 static void nautilus_option_menu_item_activatable_interface_init (GtkActivatableIface *iface);
+static void update_label_sensitivity_for_actions (NautilusOptionMenuItem *self);
 
 G_DEFINE_TYPE_WITH_CODE (NautilusOptionMenuItem, nautilus_option_menu_item, GTK_TYPE_MENU_ITEM,
                          G_IMPLEMENT_INTERFACE (GTK_TYPE_ACTIVATABLE,
@@ -54,6 +56,7 @@ nautilus_option_menu_item_finalize (GObject *object)
 {
   NautilusOptionMenuItem *self = NAUTILUS_OPTION_MENU_ITEM (object);
 
+  g_clear_pointer (&self->priv->actions, g_hash_table_destroy);
   g_clear_pointer (&self->priv->options, g_hash_table_destroy);
 
   G_OBJECT_CLASS (nautilus_option_menu_item_parent_class)->finalize (object);
@@ -177,6 +180,7 @@ nautilus_option_menu_item_init (NautilusOptionMenuItem *self)
 
   self->priv->options = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                g_free, NULL);
+  self->priv->actions = g_hash_table_new (NULL, NULL);
 }
 
 static void
@@ -199,7 +203,10 @@ nautilus_option_menu_item_update (GtkActivatable *activatable,
   if (g_strcmp0 (property_name, "visible") == 0)
     gtk_widget_set_visible (GTK_WIDGET (self), gtk_action_is_visible (action));
   else if (g_strcmp0 (property_name, "sensitive") == 0)
-    gtk_widget_set_sensitive (GTK_WIDGET (self), gtk_action_is_sensitive (action));
+    {
+      gtk_widget_set_sensitive (GTK_WIDGET (self), gtk_action_is_sensitive (action));
+      update_label_sensitivity_for_actions (self);
+    }
   else if (gtk_activatable_get_use_action_appearance (activatable) &&
            g_strcmp0 (property_name, "label") == 0)
     update_label_for_action (self, action);
@@ -223,6 +230,7 @@ nautilus_option_menu_item_sync_action_properties (GtkActivatable *activatable,
 
   gtk_widget_set_visible (GTK_WIDGET (self), gtk_action_is_visible (action));
   gtk_widget_set_sensitive (GTK_WIDGET (self), gtk_action_is_sensitive (action));
+  update_label_sensitivity_for_actions (self);
 
   if (use_action_appearance)
     {
@@ -236,6 +244,33 @@ nautilus_option_menu_item_activatable_interface_init (GtkActivatableIface *iface
 {
   iface->update = nautilus_option_menu_item_update;
   iface->sync_action_properties = nautilus_option_menu_item_sync_action_properties;
+}
+
+static void
+update_label_sensitivity_for_actions (NautilusOptionMenuItem *self)
+{
+  gint num_options = g_hash_table_size (self->priv->options);
+  gint num_actions = g_hash_table_size (self->priv->actions);
+  gint num_sensitive_actions;
+  GtkAction *action;
+  GHashTableIter iter;
+
+  if (num_options > num_actions)
+    {
+      gtk_widget_set_sensitive (self->priv->label_widget, TRUE);
+      return;
+    }
+
+  num_sensitive_actions = 0;
+  g_hash_table_iter_init (&iter, self->priv->actions);
+  while (g_hash_table_iter_next (&iter, (gpointer *) &action, NULL))
+    {
+      if (gtk_action_is_sensitive (action))
+        num_sensitive_actions++;
+    }
+
+  gtk_widget_set_sensitive (self->priv->label_widget,
+                            (num_sensitive_actions > 0));
 }
 
 static void
@@ -320,6 +355,7 @@ nautilus_option_menu_item_add_option (NautilusOptionMenuItem *self,
   g_return_if_fail (id != NULL);
 
   insert_menu_item_option (self, id, label, icon_name);
+  update_label_sensitivity_for_actions (self);
 }
 
 gboolean
@@ -337,6 +373,9 @@ nautilus_option_menu_item_remove_option (NautilusOptionMenuItem *self,
 
   g_hash_table_remove (self->priv->options, id);
   gtk_widget_destroy (option);
+
+  update_label_sensitivity_for_actions (self);
+
   return TRUE;
 }
 
@@ -356,16 +395,30 @@ nautilus_option_menu_item_add_action (NautilusOptionMenuItem *self,
 
   option = insert_menu_item_option (self, id, label, NULL);
   gtk_activatable_set_related_action (GTK_ACTIVATABLE (option), action);
+
+  g_hash_table_add (self->priv->actions, action);
+
+  g_signal_connect_swapped (action, "notify::sensitive",
+                            G_CALLBACK (update_label_sensitivity_for_actions), self);
+  update_label_sensitivity_for_actions (self);
 }
 
 gboolean
 nautilus_option_menu_item_remove_action (NautilusOptionMenuItem *self,
                                          GtkAction *action)
 {
+  gboolean retval;
+
   g_return_val_if_fail (NAUTILUS_IS_OPTION_MENU_ITEM (self), FALSE);
   g_return_val_if_fail (GTK_IS_ACTION (action), FALSE);
 
-  return nautilus_option_menu_item_remove_option (self, gtk_action_get_name (action));
+  retval = nautilus_option_menu_item_remove_option (self, gtk_action_get_name (action));
+  g_hash_table_remove (self->priv->actions, action);
+
+  g_signal_handlers_disconnect_by_func (action, update_label_sensitivity_for_actions, self);
+  update_label_sensitivity_for_actions (self);
+
+  return retval;
 }
 
 GtkWidget *
