@@ -28,9 +28,7 @@
   <separator/>
   <!-- These belong to ViewMenu above -->
   <placeholder name="Zoom Items Placeholder">
-    <menuitem name="Zoom In" action="Zoom In"/>
-    <menuitem name="Zoom Out" action="Zoom Out"/>
-    <menuitem name="Zoom Normal" action="Zoom Normal"/>
+    <menuitem name="Zoom Options" action="Zoom Options"/>
   </placeholder>
   <separator/>
   <!-- End of ViewMenu -->
