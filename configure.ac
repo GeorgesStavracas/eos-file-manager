@@ -243,17 +243,22 @@ dnl Check for Tracker
 dnl ===========================================================================
 
 AC_ARG_ENABLE(tracker,
-              [AS_HELP_STRING([--enable-tracker=@<:@yes/no@:>@],
-                              [build Tracker builtin support [default=yes]])],
+              [AS_HELP_STRING([--enable-tracker=@<:@yes/no/auto@:>@],
+                              [build Tracker builtin support [default=auto]])],
               [enable_tracker="$enableval"],
-              [enable_tracker=yes])
+              [enable_tracker=auto])
 
+build_tracker=no
 if test "x$enable_tracker" != "xno"; then
-  PKG_CHECK_MODULES(TRACKER, tracker-sparql-0.16)
-  AC_DEFINE(ENABLE_TRACKER, 1, [Define to enable Tracker support])
+  PKG_CHECK_MODULES(TRACKER, tracker-sparql-0.16,
+                    [build_tracker=yes],
+                    [build_tracker=no])
+  if test "x$build_tracker" = "xyes"; then
+    AC_DEFINE(ENABLE_TRACKER, 1, [Define to enable Tracker support])
+  fi
 fi
 
-AM_CONDITIONAL(ENABLE_TRACKER, test "x$enable_tracker" = "xyes")
+AM_CONDITIONAL(ENABLE_TRACKER, test "x$build_tracker" = "xyes")
 
 dnl ==========================================================================
 	
@@ -334,7 +339,7 @@ eos-file-manager-$VERSION:
 	libexempi support:	${enable_xmp}
 	PackageKit support:     $msg_packagekit
 	nautilus-sendto ext:	$enable_nst_extension
-	Tracker support:	$enable_tracker
+	Tracker support:	$build_tracker
 
         debugging support:      ${enable_debug}
         profiling support:      ${enable_profiling}
