@@ -62,6 +62,40 @@ void nautilus_option_menu_item_add_option (NautilusOptionMenuItem *self,
 gboolean nautilus_option_menu_item_remove_option (NautilusOptionMenuItem *self,
                                                   const gchar *id);
 
+void nautilus_option_menu_item_add_action (NautilusOptionMenuItem *self,
+                                           GtkAction *action);
+gboolean nautilus_option_menu_item_remove_action (NautilusOptionMenuItem *self,
+                                                  GtkAction *action);
+
+GtkWidget * nautilus_option_menu_item_get_label (NautilusOptionMenuItem *self);
+
+/* a GtkAction that creates a NautilusOptionMenuItem */
+#define NAUTILUS_TYPE_OPTION_MENU_ACTION            (nautilus_option_menu_action_get_type ())
+#define NAUTILUS_OPTION_MENU_ACTION(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NAUTILUS_TYPE_OPTION_MENU_ACTION, NautilusOptionMenuAction))
+#define NAUTILUS_OPTION_MENU_ACTION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), NAUTILUS_TYPE_OPTION_MENU_ACTION, NautilusOptionMenuActionClass))
+#define NAUTILUS_IS_OPTION_MENU_ACTION(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NAUTILUS_TYPE_OPTION_MENU_ACTION))
+#define NAUTILUS_IS_OPTION_MENU_ACTION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), NAUTILUS_TYPE_OPTION_MENU_ACTION))
+#define NAUTILUS_OPTION_MENU_ACTION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NAUTILUS_TYPE_OPTION_MENU_ACTION, NautilusOptionMenuActionClass))
+
+typedef struct _NautilusOptionMenuAction       NautilusOptionMenuAction;
+typedef struct _NautilusOptionMenuActionClass  NautilusOptionMenuActionClass;
+
+struct _NautilusOptionMenuAction
+{
+  GtkAction parent;
+};
+
+struct _NautilusOptionMenuActionClass
+{
+  GtkActionClass parent_class;
+};
+
+GType	   nautilus_option_menu_action_get_type	   (void) G_GNUC_CONST;
+GtkAction * nautilus_option_menu_action_new (const gchar *name,
+                                             const gchar *label,
+                                             const gchar *tooltip,
+                                             const gchar *stock_id);
+
 G_END_DECLS
 
 #endif /* __NAUTILUS_OPTION_MENU_ITEM_H__ */

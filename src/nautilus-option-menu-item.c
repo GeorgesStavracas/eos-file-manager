@@ -43,7 +43,11 @@ struct _NautilusOptionMenuItemPriv {
   GtkWidget *options_box;
 };
 
-G_DEFINE_TYPE (NautilusOptionMenuItem, nautilus_option_menu_item, GTK_TYPE_MENU_ITEM)
+static void nautilus_option_menu_item_activatable_interface_init (GtkActivatableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (NautilusOptionMenuItem, nautilus_option_menu_item, GTK_TYPE_MENU_ITEM,
+                         G_IMPLEMENT_INTERFACE (GTK_TYPE_ACTIVATABLE,
+                                                nautilus_option_menu_item_activatable_interface_init))
 
 static void
 nautilus_option_menu_item_finalize (GObject *object)
@@ -61,12 +65,22 @@ nautilus_option_menu_item_set_label (GtkMenuItem *menu_item,
 {
   NautilusOptionMenuItem *self = NAUTILUS_OPTION_MENU_ITEM (menu_item);
 
-  gtk_label_set_label (GTK_LABEL (self->priv->label_widget), label ? label : "");
+  if (label != NULL)
+    {
+      gtk_widget_show (self->priv->label_widget);
+      gtk_label_set_label (GTK_LABEL (self->priv->label_widget), label);
+    }
+  else
+    {
+      gtk_label_set_label (GTK_LABEL (self->priv->label_widget), "");
+      gtk_widget_hide (self->priv->label_widget);
+    }
+
   g_object_notify (G_OBJECT (self), "label");
 }
 
 static const gchar *
-nautilus_option_menu_item_get_label (GtkMenuItem *menu_item)
+nautilus_option_menu_item_get_label_impl (GtkMenuItem *menu_item)
 {
   NautilusOptionMenuItem *self = NAUTILUS_OPTION_MENU_ITEM (menu_item);
 
@@ -120,7 +134,7 @@ nautilus_option_menu_item_class_init (NautilusOptionMenuItemClass *klass)
   oclass->finalize = nautilus_option_menu_item_finalize;
 
   mclass->set_label = nautilus_option_menu_item_set_label;
-  mclass->get_label = nautilus_option_menu_item_get_label;
+  mclass->get_label = nautilus_option_menu_item_get_label_impl;
   mclass->select = nautilus_option_menu_item_select;
   mclass->deselect = nautilus_option_menu_item_deselect;
 
@@ -146,18 +160,82 @@ nautilus_option_menu_item_init (NautilusOptionMenuItem *self)
   gtk_container_add (GTK_CONTAINER (self), self->priv->hbox);
 
   self->priv->label_widget = gtk_label_new (NULL);
+  gtk_widget_set_hexpand (self->priv->label_widget, TRUE);
+  gtk_misc_set_alignment (GTK_MISC (self->priv->label_widget), 0.0, 0.5);
+  gtk_label_set_mnemonic_widget (GTK_LABEL (self->priv->label_widget),
+                                 GTK_WIDGET (self));
+  gtk_label_set_use_underline (GTK_LABEL (self->priv->label_widget), TRUE);
   gtk_container_add (GTK_CONTAINER (self->priv->hbox), self->priv->label_widget);
 
   self->priv->options_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_halign (self->priv->options_box, GTK_ALIGN_END);
   gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->options_box),
                                GTK_STYLE_CLASS_LINKED);
-  gtk_widget_set_halign (self->priv->options_box, GTK_ALIGN_END);
   gtk_container_add (GTK_CONTAINER (self->priv->hbox), self->priv->options_box);
 
   gtk_widget_show_all (self->priv->hbox);
 
   self->priv->options = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                g_free, NULL);
+}
+
+static void
+update_label_for_action (NautilusOptionMenuItem *self,
+                         GtkAction *action)
+{
+  const gchar *label;
+
+  label = gtk_action_get_label (action);
+  gtk_menu_item_set_label (GTK_MENU_ITEM (self), label);
+}
+
+static void
+nautilus_option_menu_item_update (GtkActivatable *activatable,
+                                  GtkAction *action,
+                                  const gchar *property_name)
+{
+  NautilusOptionMenuItem *self = NAUTILUS_OPTION_MENU_ITEM (activatable);
+
+  if (g_strcmp0 (property_name, "visible") == 0)
+    gtk_widget_set_visible (GTK_WIDGET (self), gtk_action_is_visible (action));
+  else if (g_strcmp0 (property_name, "sensitive") == 0)
+    gtk_widget_set_sensitive (GTK_WIDGET (self), gtk_action_is_sensitive (action));
+  else if (gtk_activatable_get_use_action_appearance (activatable) &&
+           g_strcmp0 (property_name, "label") == 0)
+    update_label_for_action (self, action);
+}
+
+static void
+nautilus_option_menu_item_sync_action_properties (GtkActivatable *activatable,
+                                                  GtkAction *action)
+{
+  NautilusOptionMenuItem *self = NAUTILUS_OPTION_MENU_ITEM (activatable);
+  gboolean use_action_appearance;
+
+  use_action_appearance = gtk_activatable_get_use_action_appearance (activatable);
+
+  if (!use_action_appearance || !action)
+    gtk_label_set_mnemonic_widget (GTK_LABEL (self->priv->label_widget),
+                                   NULL);
+
+  if (!action)
+    return;
+
+  gtk_widget_set_visible (GTK_WIDGET (self), gtk_action_is_visible (action));
+  gtk_widget_set_sensitive (GTK_WIDGET (self), gtk_action_is_sensitive (action));
+
+  if (use_action_appearance)
+    {
+      gtk_label_set_use_underline (GTK_LABEL (self->priv->label_widget), TRUE);
+      update_label_for_action (self, action);
+    }
+}
+
+static void
+nautilus_option_menu_item_activatable_interface_init (GtkActivatableIface *iface)
+{
+  iface->update = nautilus_option_menu_item_update;
+  iface->sync_action_properties = nautilus_option_menu_item_sync_action_properties;
 }
 
 static void
@@ -193,13 +271,33 @@ create_menu_item_option (const gchar *id,
 
   if (label != NULL)
     {
-      w = gtk_label_new (label);
+      w = gtk_label_new_with_mnemonic (label);
+      gtk_label_set_mnemonic_widget (GTK_LABEL (w), option);
       gtk_container_add (GTK_CONTAINER (child), w);
     }
 
   g_object_set_data_full (G_OBJECT (option),
                           "option-id", g_strdup (id),
                           (GDestroyNotify) g_free);
+
+  return option;
+}
+
+static GtkWidget *
+insert_menu_item_option (NautilusOptionMenuItem *self,
+                         const gchar *id,
+                         const gchar *label,
+                         const gchar *icon_name)
+{
+  GtkWidget *option;
+
+  option = create_menu_item_option (id, label, icon_name);
+  g_hash_table_insert (self->priv->options, g_strdup (id), option);
+  gtk_container_add (GTK_CONTAINER (self->priv->options_box), option);
+  gtk_widget_show_all (option);
+
+  g_signal_connect (option, "clicked",
+                    G_CALLBACK (on_option_clicked), self);
 
   return option;
 }
@@ -218,18 +316,10 @@ nautilus_option_menu_item_add_option (NautilusOptionMenuItem *self,
                                       const gchar *label,
                                       const gchar *icon_name)
 {
-  GtkWidget *option;
-
   g_return_if_fail (NAUTILUS_IS_OPTION_MENU_ITEM (self));
   g_return_if_fail (id != NULL);
 
-  option = create_menu_item_option (id, label, icon_name);
-  g_hash_table_insert (self->priv->options, g_strdup (id), option);
-  gtk_container_add (GTK_CONTAINER (self->priv->options_box), option);
-  gtk_widget_show_all (option);
-
-  g_signal_connect (option, "clicked",
-                    G_CALLBACK (on_option_clicked), self);
+  insert_menu_item_option (self, id, label, icon_name);
 }
 
 gboolean
@@ -248,4 +338,70 @@ nautilus_option_menu_item_remove_option (NautilusOptionMenuItem *self,
   g_hash_table_remove (self->priv->options, id);
   gtk_widget_destroy (option);
   return TRUE;
+}
+
+void
+nautilus_option_menu_item_add_action (NautilusOptionMenuItem *self,
+                                      GtkAction *action)
+{
+  GtkWidget *option;
+  const gchar *id;
+  const gchar *label;
+
+  g_return_if_fail (NAUTILUS_IS_OPTION_MENU_ITEM (self));
+  g_return_if_fail (GTK_IS_ACTION (action));
+
+  id = gtk_action_get_name (action);
+  label = gtk_action_get_label (action);
+
+  option = insert_menu_item_option (self, id, label, NULL);
+  gtk_activatable_set_related_action (GTK_ACTIVATABLE (option), action);
+}
+
+gboolean
+nautilus_option_menu_item_remove_action (NautilusOptionMenuItem *self,
+                                         GtkAction *action)
+{
+  g_return_val_if_fail (NAUTILUS_IS_OPTION_MENU_ITEM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_ACTION (action), FALSE);
+
+  return nautilus_option_menu_item_remove_option (self, gtk_action_get_name (action));
+}
+
+GtkWidget *
+nautilus_option_menu_item_get_label (NautilusOptionMenuItem *self)
+{
+  g_return_val_if_fail (NAUTILUS_IS_OPTION_MENU_ITEM (self), NULL);
+  return self->priv->label_widget;
+}
+
+G_DEFINE_TYPE (NautilusOptionMenuAction, nautilus_option_menu_action, GTK_TYPE_ACTION)
+
+static void
+nautilus_option_menu_action_class_init (NautilusOptionMenuActionClass *klass)
+{
+  GtkActionClass *aclass = GTK_ACTION_CLASS (klass);
+  aclass->menu_item_type = NAUTILUS_TYPE_OPTION_MENU_ITEM;
+}
+
+static void
+nautilus_option_menu_action_init (NautilusOptionMenuAction *self)
+{
+  /* do nothing */
+}
+
+GtkAction *
+nautilus_option_menu_action_new (const gchar *name,
+                                 const gchar *label,
+                                 const gchar *tooltip,
+                                 const gchar *stock_id)
+{
+  g_return_val_if_fail (name != NULL, NULL);
+
+  return g_object_new (NAUTILUS_TYPE_OPTION_MENU_ACTION,
+                       "name", name,
+		       "label", label,
+		       "tooltip", tooltip,
+		       "stock-id", stock_id,
+		       NULL);
 }
