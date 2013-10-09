@@ -31,6 +31,8 @@
   <placeholder name="Undostack Actions">
     <menuitem name="Undo" action="Undo"/>
     <menuitem name="Redo" action="Redo"/>
+  </placeholder>
+  <placeholder name="Edit Actions">
     <menuitem name="Paste" action="Paste"/>
   </placeholder>
   <menu action="Advanced">

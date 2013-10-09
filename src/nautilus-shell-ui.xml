@@ -25,6 +25,7 @@
   <placeholder name="Global File Items Placeholder"/>
   <separator/>
   <placeholder name="Undostack Actions"/>
+  <placeholder name="Edit Actions"/>
   <separator/>
   <!-- These belong to ViewMenu above -->
   <placeholder name="Zoom Items Placeholder">
