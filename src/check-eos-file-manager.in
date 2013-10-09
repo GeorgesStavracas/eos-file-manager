@@ -1,0 +1,5 @@
+#!/bin/sh
+export GSETTINGS_SCHEMA_DIR=@schemadir@
+@compileschemas@ @schemadir@
+./eos-file-manager --check --g-fatal-warnings
+rm @schemadir@/gschemas.compiled

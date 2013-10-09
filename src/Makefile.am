@@ -243,6 +243,11 @@ BUILT_SOURCES = 					\
 	$(NULL)
 
 TESTS=check-eos-file-manager
+check-eos-file-manager: check-eos-file-manager.in
+	$(AM_V_GEN) sed -e 's|@schemadir[@]|$(top_builddir)/libnautilus-private|g' \
+	-e 's|@compileschemas[@]|$(GLIB_COMPILE_SCHEMAS)|g' \
+	$< > $@
+	chmod +x $@
 
 @INTLTOOL_SERVER_RULE@
 
@@ -250,13 +255,14 @@ CLEANFILES = \
 	$(BUILT_SOURCES)			\
 	$(server_DATA)				\
 	stamp-nautilus-enum-types.h		\
+	check-eos-file-manager			\
 	$(NULL)
 
 EXTRA_DIST =					\
 	$(resource_files)			\
 	$(server_in_files)			\
 	eos-file-manager.gresource.xml		\
-	check-eos-file-manager			\
+	check-eos-file-manager.in		\
 	$(NULL)
 
 dist-hook:

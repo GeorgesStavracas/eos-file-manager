@@ -1,2 +1,0 @@
-#!/bin/sh
-./eos-file-manager --check --g-fatal-warnings

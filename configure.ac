@@ -296,6 +296,7 @@ GOBJECT_INTROSPECTION_CHECK([0.6.4])
 
 dnl ==========================================================================
 
+AC_PATH_PROG(GLIB_COMPILE_SCHEMAS, glib-compile-schemas, no)
 AC_PATH_PROG(UPDATE_MIME_DATABASE, update-mime-database, no)
 
 AC_ARG_ENABLE(update-mimedb,
