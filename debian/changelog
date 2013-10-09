@@ -1,3 +1,15 @@
+eos-file-manager (1.2.0~rc2) unstable; urgency=low
+
+  * Updating version to 1.2.0~rc2
+
+ -- Roddy Shuler <roddy@endlessm.com>  Wed, 09 Oct 2013 14:27:30 -0700
+
+eos-file-manager (1.2.0~rc1) unstable; urgency=low
+
+  * Updating version to 1.2.0~rc1
+
+ -- Roddy Shuler <roddy@endlessm.com>  Wed, 09 Oct 2013 02:08:44 -0700
+
 eos-file-manager (1.1.5~dev1) unstable; urgency=low
 
   * Initial eos-file-manager packaging
