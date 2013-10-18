@@ -79,6 +79,7 @@ struct NautilusWindowSlotDetails {
 
 	/* status/action area */
 	GtkWidget *status_box;
+	GtkWidget *status_event_box;
 	GtkWidget *info_box;
 	GtkWidget *path_bar;
 	GtkWidget *action_box;
@@ -600,6 +601,16 @@ add_folder_button_clicked_cb (GtkButton *button,
 }
 
 static void
+status_event_box_clicked_cb (GtkWidget *widget,
+			     GdkEvent *event,
+			     NautilusWindowSlot *slot)
+{
+	if (slot->details->content_view != NULL) {
+		nautilus_view_set_selection (slot->details->content_view, NULL);
+	}
+}
+
+static void
 create_path_bar_box (NautilusWindowSlot *slot)
 {
 	GtkWidget *box;
@@ -613,6 +624,12 @@ create_path_bar_box (NautilusWindowSlot *slot)
 	gtk_widget_set_hexpand (box, TRUE);
 	gtk_container_add (GTK_CONTAINER (slot->details->status_box), box);
 	slot->details->info_box = box;
+
+	slot->details->status_event_box = gtk_event_box_new ();
+	gtk_widget_set_hexpand (slot->details->status_event_box, TRUE);
+	g_signal_connect_object (slot->details->status_event_box, "button-press-event",
+				 G_CALLBACK (status_event_box_clicked_cb), slot, 0);
+	gtk_container_add (GTK_CONTAINER(slot->details->status_box), slot->details->status_event_box);
 
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, PATH_BAR_BOX_SPACING);
 	gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
@@ -2486,6 +2503,7 @@ update_status_box_for_selection (NautilusWindowSlot *slot,
 	GdkPixbuf *pixbuf;
 
 	gtk_widget_hide (slot->details->path_bar);
+	gtk_widget_set_hexpand (slot->details->info_box, FALSE);
 
 	update_action_box_for_selection (slot, view);
 
@@ -2628,6 +2646,7 @@ update_status_box_for_empty_selection (NautilusWindowSlot *slot)
 	GtkWidget *button, *box;
 
 	gtk_widget_show (slot->details->path_bar);
+	gtk_widget_set_hexpand (slot->details->info_box, TRUE);
 
 	button = gtk_button_new ();
 	gtk_container_add (GTK_CONTAINER (slot->details->action_box), button);
