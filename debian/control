@@ -58,8 +58,6 @@ Breaks: gnome-volume-manager (<< 2.24),
         nautilus-sendto-empathy (<< 3.0),
         gnome-bluetooth (<< 3.0)
 Replaces: nautilus, nautilus-sendto, nautilus-data (<< 3.2.1-2ubuntu1)
-Provides: nautilus
-Conflicts: nautilus
 Description: file manager for EOS
  eos-file-manager is the official file manager for the EOS desktop. It allows
  to browse directories, preview files and launch applications associated
@@ -75,8 +73,6 @@ Priority: extra
 Depends: eos-file-manager (= ${binary:Version}),
          ${misc:Depends}
 Replaces: nautilus-dbg, libnautilus-extension1-dbg
-Provides: nautilus-dbg
-Conflicts: nautilus-dbg
 Description: file manager for EOS - debugging version
  eos-file-manager is the official file manager for the EOS desktop. It allows
  to browse directories, preview files and launch applications associated
@@ -94,8 +90,6 @@ Section: libs
 Depends: ${misc:Depends},
          ${shlibs:Depends}
 Replaces: libnautilus-extension1a, libnautilus-extension1
-Provides: libnautilus-extension1a
-Conflicts: libnautilus-extension1a
 Breaks: nautilus (<< 3.0)
 Description: libraries for eos-file-manager components - runtime version
  eos-file-manager is the official file manager for the EOS desktop.
@@ -112,8 +106,6 @@ Depends: libeos-file-manager-extension1a (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends}
 Replaces: libnautilus-extension-dev
-Provides: libnautilus-extension-dev
-Conflicts: libnautilus-extension-dev
 Description: libraries for eos-file-manager components - development version
  eos-file-manager is the official file manager for the EOS desktop.
  .
@@ -126,9 +118,8 @@ Section: introspection
 Depends: ${gir:Depends},
          ${shlibs:Depends},
          ${misc:Depends}
-Replaces: gir1.2-nautilus-3.0, gir1.0-nautilus-3.0
-Provides: gir1.2-nautilus-3.0
 Conflicts: gir1.2-nautilus-3.0, gir1.0-nautilus-3.0
+Replaces: gir1.2-nautilus-3.0, gir1.0-nautilus-3.0
 Description: libraries for eos-file-manager components - gir bindings
  eos-file-manager is the official file manager for the EOS desktop.
  .
@@ -139,8 +130,6 @@ Package: eos-file-manager-data
 Architecture: all
 Depends: ${misc:Depends}
 Replaces: nautilus-data
-Provides: nautilus-data
-Conflicts: nautilus-data
 Suggests: eos-file-manager
 Description: data files for eos-file-manager
  eos-file-manager is the official file manager for the EOS desktop.
