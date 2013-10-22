@@ -631,7 +631,7 @@ create_path_bar_box (NautilusWindowSlot *slot)
 	gtk_widget_set_hexpand (slot->details->status_event_box, TRUE);
 	g_signal_connect_object (slot->details->status_event_box, "button-press-event",
 				 G_CALLBACK (status_event_box_clicked_cb), slot, 0);
-	gtk_container_add (GTK_CONTAINER(slot->details->status_box), slot->details->status_event_box);
+	gtk_container_add (GTK_CONTAINER (slot->details->status_box), slot->details->status_event_box);
 
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, PATH_BAR_BOX_SPACING);
 	gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
