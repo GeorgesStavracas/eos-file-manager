@@ -600,7 +600,7 @@ add_folder_button_clicked_cb (GtkButton *button,
 	gtk_action_activate (action);
 }
 
-static void
+static gboolean
 status_event_box_clicked_cb (GtkWidget *widget,
 			     GdkEvent *event,
 			     NautilusWindowSlot *slot)
@@ -608,6 +608,8 @@ status_event_box_clicked_cb (GtkWidget *widget,
 	if (slot->details->content_view != NULL) {
 		nautilus_view_set_selection (slot->details->content_view, NULL);
 	}
+
+	return FALSE;
 }
 
 static void
