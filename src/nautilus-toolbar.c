@@ -403,6 +403,20 @@ gear_menu_key_press (GtkWidget *widget,
         return FALSE;
 }
 
+static gboolean
+nautilus_toolbar_clicked_cb (GtkWidget *widget,
+			     GdkEvent *event,
+			     NautilusWindow *window)
+{
+	NautilusWindowSlot *slot = nautilus_window_get_active_slot (window);
+	if (slot) {
+		NautilusView *view = nautilus_window_slot_get_current_view (slot);
+		nautilus_view_set_selection (view, NULL);
+	}
+
+	return FALSE;
+}
+
 static void
 nautilus_toolbar_constructed (GObject *obj)
 {
@@ -429,6 +443,8 @@ nautilus_toolbar_constructed (GObject *obj)
 
 	toolbar = gtk_toolbar_new ();
 	self->priv->toolbar = toolbar;
+
+	g_signal_connect_object (toolbar, "button-press-event", G_CALLBACK (nautilus_toolbar_clicked_cb), self->priv->window, 0);
 
 	gtk_box_pack_start (GTK_BOX (self), self->priv->toolbar, TRUE, TRUE, 0);
 	gtk_widget_show_all (self->priv->toolbar);
