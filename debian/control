@@ -118,7 +118,6 @@ Description: libraries for eos-file-manager components - runtime version
 
 Package: libnautilus-extension-dev
 Version: 99
-Architecture: any
 Section: libdevel
 Depends: libeos-file-manager-extension-dev
 Description: dummy transitional package for libeos-file-manager-extension-dev
