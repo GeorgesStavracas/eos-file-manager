@@ -978,6 +978,8 @@ over_eject_button (SidebarTreeData *data,
 		if (x - x_offset >= 0 &&
 		    x - x_offset <= eject_button_size) {
 			show_eject = TRUE;
+		} else {
+			show_eject = FALSE;
 		}
 	}
 
