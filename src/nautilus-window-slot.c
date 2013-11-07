@@ -2459,18 +2459,23 @@ preview_image_enter_notify_cb (GtkWidget *widget,
 			       gpointer data)
 {
 	PreviewImageClosure *clos = data;
-	GdkPixbuf *preview_icon, *emblem_icon;
+	GdkPixbuf *file_icon, *preview_icon, *emblem_icon;
 	int emblem_width, emblem_height, preview_width, preview_height;
 
-	preview_icon = nautilus_file_get_icon_pixbuf (clos->file,
-						      NAUTILUS_ICON_SIZE_LARGE,
-						      TRUE,
-						      NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
+	file_icon = nautilus_file_get_icon_pixbuf (clos->file,
+						   NAUTILUS_ICON_SIZE_LARGE,
+						   TRUE,
+						   NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
+
+	/* Copy the pixbuf, as otherwise we'll composite the emblem over
+	 * the pixbuf owned by NautilusFile */
+	preview_icon = gdk_pixbuf_copy (file_icon);
+	g_object_unref (file_icon);
 
 	preview_width = gdk_pixbuf_get_width (preview_icon);
 	preview_height = gdk_pixbuf_get_height (preview_icon);
 
-	emblem_icon = nautilus_get_preview_icon ();
+	emblem_icon = nautilus_get_preview_icon (widget);
 	emblem_width = gdk_pixbuf_get_width (emblem_icon);
 	emblem_height = gdk_pixbuf_get_height (emblem_icon);
 
