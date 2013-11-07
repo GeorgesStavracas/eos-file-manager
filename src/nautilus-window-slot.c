@@ -2422,7 +2422,7 @@ preview_image_button_press_cb (GtkWidget *widget,
 }
 
 static GdkPixbuf *
-nautilus_get_preview_icon (void)
+nautilus_get_preview_icon (GtkWidget *widget)
 {
 	static GdkPixbuf *preview_icon = NULL;
         int icon_size;
@@ -2430,16 +2430,24 @@ nautilus_get_preview_icon (void)
 	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, NULL, &icon_size);
 
 	if (preview_icon == NULL) {
-		GInputStream *stream = g_resources_open_stream
-			("/org/gnome/nautilus/icons/preview.svg", 0, NULL);
-		if (stream != NULL) {
-			preview_icon = gdk_pixbuf_new_from_stream_at_scale (stream,
-									    icon_size,
-									    icon_size,
-									    TRUE,
-									    NULL, NULL);
-			g_object_unref (stream);
+		GFile *file;
+		GIcon *icon;
+		GtkIconInfo *icon_info;
+
+		file = g_file_new_for_uri("resource:///org/gnome/nautilus/icons/preview-symbolic.svg");
+		icon = g_file_icon_new (file);
+		g_object_unref (file);
+
+		icon_info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (),
+							    icon, icon_size, 0);
+		if (icon_info != NULL) {
+			preview_icon = gtk_icon_info_load_symbolic_for_context (icon_info,
+										gtk_widget_get_style_context (widget),
+										NULL, NULL);
+			g_object_unref (icon_info);
 		}
+
+		g_object_unref (icon);
 	}
 
 	return g_object_ref (preview_icon);
