@@ -2426,29 +2426,67 @@ static GdkPixbuf *
 nautilus_get_preview_icon (GtkWidget *widget)
 {
 	static GdkPixbuf *preview_icon = NULL;
-        int icon_size;
-
-	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, NULL, &icon_size);
 
 	if (preview_icon == NULL) {
 		GFile *file;
 		GIcon *icon;
 		GtkIconInfo *icon_info;
+		GdkPixbuf *preview_emblem;
+		cairo_surface_t *preview_surface;
+		cairo_t *cr;
+		GtkStyleContext *context;
+		int icon_size, bg_size;
+		int emblem_width, emblem_height;
+
+		gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, NULL, &icon_size);
+		bg_size = 2 * icon_size;
+		preview_emblem = NULL;
 
 		file = g_file_new_for_uri("resource:///org/gnome/nautilus/icons/preview-symbolic.svg");
 		icon = g_file_icon_new (file);
 		g_object_unref (file);
 
+		context = gtk_widget_get_style_context (widget);
+		gtk_style_context_save (context);
+		gtk_style_context_add_class (context, "nautilus-preview-image");
+
 		icon_info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (),
 							    icon, icon_size, 0);
 		if (icon_info != NULL) {
-			preview_icon = gtk_icon_info_load_symbolic_for_context (icon_info,
-										gtk_widget_get_style_context (widget),
-										NULL, NULL);
+			preview_emblem = gtk_icon_info_load_symbolic_for_context (icon_info,
+										  context,
+										  NULL, NULL);
 			g_object_unref (icon_info);
 		}
 
 		g_object_unref (icon);
+
+		preview_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, bg_size, bg_size);
+		cr = cairo_create (preview_surface);
+
+		gtk_render_background (context, cr,
+				       0, 0, bg_size, bg_size);
+		gtk_render_frame (context, cr,
+				  0, 0, bg_size, bg_size);
+
+		if (preview_emblem != NULL) {
+			emblem_width = gdk_pixbuf_get_width (preview_emblem);
+			emblem_height = gdk_pixbuf_get_height (preview_emblem);
+
+			gdk_cairo_set_source_pixbuf (cr, preview_emblem,
+						     floor ((bg_size - emblem_width) / 2.0),
+						     floor ((bg_size - emblem_height) / 2.0));
+			cairo_paint (cr);
+
+			g_object_unref (preview_emblem);
+		}
+
+		preview_icon = gdk_pixbuf_get_from_surface (preview_surface,
+							    0, 0, bg_size, bg_size);
+
+		gtk_style_context_restore (context);
+		cairo_destroy (cr);
+		cairo_surface_destroy (preview_surface);
 	}
 
 	return g_object_ref (preview_icon);
