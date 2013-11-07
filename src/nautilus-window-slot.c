@@ -2400,107 +2400,106 @@ view_begin_loading_cb (NautilusView       *view,
 }
 
 typedef struct {
-        GtkWidget *image;
-        NautilusFile *file;
-        NautilusView *view;
+	GtkWidget *image;
+	NautilusFile *file;
+	NautilusView *view;
 } PreviewImageClosure;
 
 static gboolean
 preview_image_button_press_cb (GtkWidget *widget,
-                               GdkEvent *event,
-                               gpointer data)
+			       GdkEvent *event,
+			       gpointer data)
 {
-        PreviewImageClosure *clos = data;
-        GList file_list;
+	PreviewImageClosure *clos = data;
+	GList file_list;
 
-        file_list.data = clos->file;
-        file_list.next = NULL;
-        file_list.prev = NULL;
-        nautilus_view_preview_files (clos->view, &file_list, NULL);
+	file_list.data = clos->file;
+	file_list.next = NULL;
+	file_list.prev = NULL;
+	nautilus_view_preview_files (clos->view, &file_list, NULL);
 
-        return FALSE;
+	return FALSE;
 }
 
 static GdkPixbuf *
 nautilus_get_preview_icon (void)
 {
-        static GdkPixbuf *preview_icon = NULL;
+	static GdkPixbuf *preview_icon = NULL;
         int icon_size;
 
-        gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, NULL, &icon_size);
+	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, NULL, &icon_size);
 
-        if (preview_icon == NULL) {
-                GInputStream *stream = g_resources_open_stream
-                        ("/org/gnome/nautilus/icons/preview.svg", 0, NULL);
-                if (stream != NULL) {
-                        preview_icon = gdk_pixbuf_new_from_stream_at_scale (stream,
-                                                                            icon_size,
-                                                                            icon_size,
-                                                                            TRUE,
-                                                                            NULL, NULL);
-                        g_object_unref (stream);
-                }
-        }
+	if (preview_icon == NULL) {
+		GInputStream *stream = g_resources_open_stream
+			("/org/gnome/nautilus/icons/preview.svg", 0, NULL);
+		if (stream != NULL) {
+			preview_icon = gdk_pixbuf_new_from_stream_at_scale (stream,
+									    icon_size,
+									    icon_size,
+									    TRUE,
+									    NULL, NULL);
+			g_object_unref (stream);
+		}
+	}
 
-        return g_object_ref (preview_icon);
+	return g_object_ref (preview_icon);
 }
 
 static gboolean
 preview_image_enter_notify_cb (GtkWidget *widget,
-                               GdkEvent *event,
-                               gpointer data)
+			       GdkEvent *event,
+			       gpointer data)
 {
-        PreviewImageClosure *clos = data;
-        GdkPixbuf *preview_icon, *emblem_icon;
-        int emblem_width, emblem_height, preview_width, preview_height;
+	PreviewImageClosure *clos = data;
+	GdkPixbuf *preview_icon, *emblem_icon;
+	int emblem_width, emblem_height, preview_width, preview_height;
 
-        preview_icon = nautilus_file_get_icon_pixbuf (clos->file,
-                                                      NAUTILUS_ICON_SIZE_LARGE,
-                                                      TRUE,
-                                                      NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
+	preview_icon = nautilus_file_get_icon_pixbuf (clos->file,
+						      NAUTILUS_ICON_SIZE_LARGE,
+						      TRUE,
+						      NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
 
-        preview_width = gdk_pixbuf_get_width (preview_icon);
-        preview_height = gdk_pixbuf_get_height (preview_icon);
+	preview_width = gdk_pixbuf_get_width (preview_icon);
+	preview_height = gdk_pixbuf_get_height (preview_icon);
 
-        emblem_icon = nautilus_get_preview_icon ();
-        emblem_width = gdk_pixbuf_get_width (emblem_icon);
-        emblem_height = gdk_pixbuf_get_height (emblem_icon);
+	emblem_icon = nautilus_get_preview_icon ();
+	emblem_width = gdk_pixbuf_get_width (emblem_icon);
+	emblem_height = gdk_pixbuf_get_height (emblem_icon);
 
-        gdk_pixbuf_composite (emblem_icon, preview_icon,
-                              (preview_width - emblem_width) / 2,
-                              (preview_height - emblem_height) / 2,
-                              emblem_width, emblem_height,
-                              (preview_width - emblem_width) / 2.0,
-                              (preview_height - emblem_height) / 2.0,
-                              1.0, 1.0,
-                              GDK_INTERP_NEAREST, 255);
+	gdk_pixbuf_composite (emblem_icon, preview_icon,
+			      (preview_width - emblem_width) / 2,
+			      (preview_height - emblem_height) / 2,
+			      emblem_width, emblem_height,
+			      (preview_width - emblem_width) / 2.0,
+			      (preview_height - emblem_height) / 2.0,
+			      1.0, 1.0,
+			      GDK_INTERP_NEAREST, 255);
 
-        gtk_image_set_from_pixbuf (GTK_IMAGE (clos->image), preview_icon);
+	gtk_image_set_from_pixbuf (GTK_IMAGE (clos->image), preview_icon);
 
-        g_object_unref (preview_icon);
-        g_object_unref (emblem_icon);
+	g_object_unref (preview_icon);
+	g_object_unref (emblem_icon);
 
-        return FALSE;
+	return FALSE;
 }
 
 static gboolean
 preview_image_leave_notify_cb (GtkWidget *widget,
-                               GdkEvent *event,
-                               gpointer data)
+			       GdkEvent *event,
+			       gpointer data)
 {
-        PreviewImageClosure *clos = data;
-        GdkPixbuf *pixbuf;
-        
-        pixbuf = nautilus_file_get_icon_pixbuf (clos->file,
+	PreviewImageClosure *clos = data;
+	GdkPixbuf *pixbuf;
+
+	pixbuf = nautilus_file_get_icon_pixbuf (clos->file,
 						NAUTILUS_ICON_SIZE_LARGE,
 						TRUE,
 						NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
 
 	gtk_image_set_from_pixbuf (GTK_IMAGE (clos->image), pixbuf);
+	g_object_unref (pixbuf);
 
-        g_object_unref (pixbuf);
-
-        return FALSE;
+	return FALSE;
 }
 
 static void
@@ -2687,8 +2686,8 @@ update_status_box_for_selection (NautilusWindowSlot *slot,
 	}
 
 	if (selection_count == 1) {
-                GtkWidget *event_box = gtk_event_box_new ();
-                PreviewImageClosure *clos = g_new0 (PreviewImageClosure, 1);
+		GtkWidget *event_box = gtk_event_box_new ();
+		PreviewImageClosure *clos = g_new0 (PreviewImageClosure, 1);
 
 		file = selection->data;
 		header_str = nautilus_file_get_display_name (file);
@@ -2699,33 +2698,30 @@ update_status_box_for_selection (NautilusWindowSlot *slot,
 							TRUE,
 							NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
 
-                
-
 		image = gtk_image_new_from_pixbuf (pixbuf);
-                gtk_widget_show (image);
+		gtk_widget_show (image);
 
 		g_object_unref (pixbuf);
 
-                gtk_container_add (GTK_CONTAINER (event_box), image);
+		gtk_container_add (GTK_CONTAINER (event_box), image);
 
-                clos->image = image;
-                clos->file = file;
-                clos->view = view;
-                g_object_set_data_full (G_OBJECT (event_box), "-nautilus-preview-closure",
-                                        clos,
-                                        g_free);
+		clos->image = image;
+		clos->file = file;
+		clos->view = view;
+		g_object_set_data_full (G_OBJECT (event_box), "-nautilus-preview-closure",
+					clos, g_free);
 
-                g_signal_connect (event_box, "button-press-event",
-                                  G_CALLBACK (preview_image_button_press_cb),
-                                  clos);
-                g_signal_connect (event_box, "enter-notify-event",
-                                  G_CALLBACK (preview_image_enter_notify_cb),
-                                  clos);
-                g_signal_connect (event_box, "leave-notify-event",
-                                  G_CALLBACK (preview_image_leave_notify_cb),
-                                  clos);
+		g_signal_connect (event_box, "button-press-event",
+				  G_CALLBACK (preview_image_button_press_cb),
+				  clos);
+		g_signal_connect (event_box, "enter-notify-event",
+				  G_CALLBACK (preview_image_enter_notify_cb),
+				  clos);
+		g_signal_connect (event_box, "leave-notify-event",
+				  G_CALLBACK (preview_image_leave_notify_cb),
+				  clos);
 
-                image = event_box;
+		image = event_box;
 	} else {
 		header_str = g_strdup_printf (ngettext("%'d item", 
 						       "%'d items", 
