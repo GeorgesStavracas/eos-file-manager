@@ -2399,6 +2399,28 @@ view_begin_loading_cb (NautilusView       *view,
 	nautilus_profile_end (NULL);
 }
 
+typedef struct {
+  NautilusFile *file;
+  NautilusView *view;
+} PreviewImageClosure;
+
+static gboolean
+preview_image_button_press_cb (GtkWidget *widget,
+                               GdkEvent *event,
+                               gpointer data)
+{
+  PreviewImageClosure *clos = data;
+  GList file_list;
+
+  file_list.data = clos->file;
+  file_list.next = NULL;
+  file_list.prev = NULL;
+
+  nautilus_view_preview_files (clos->view, &file_list, NULL);
+
+  return FALSE;
+}
+
 static void
 pack_button (GtkWidget *container,
 	     GtkActionGroup *action_group,
@@ -2583,6 +2605,9 @@ update_status_box_for_selection (NautilusWindowSlot *slot,
 	}
 
 	if (selection_count == 1) {
+                GtkWidget *event_box = gtk_event_box_new ();
+                PreviewImageClosure *clos = g_new0 (PreviewImageClosure, 1);
+
 		file = selection->data;
 		header_str = nautilus_file_get_display_name (file);
 		date_str = nautilus_file_get_string_attribute (file, "date_modified");
@@ -2592,7 +2617,23 @@ update_status_box_for_selection (NautilusWindowSlot *slot,
 							TRUE,
 							NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
 		image = gtk_image_new_from_pixbuf (pixbuf);
+                gtk_widget_show (image);
+
 		g_object_unref (pixbuf);
+
+                gtk_container_add (GTK_CONTAINER (event_box), image);
+
+                clos->file = file;
+                clos->view = view;
+                g_object_set_data_full (G_OBJECT (event_box), "-nautilus-preview-closure",
+                                        clos,
+                                        g_free);
+
+                g_signal_connect (event_box, "button-press-event",
+                                  G_CALLBACK (preview_image_button_press_cb),
+                                  clos);
+
+                image = event_box;
 	} else {
 		header_str = g_strdup_printf (ngettext("%'d item", 
 						       "%'d items", 
