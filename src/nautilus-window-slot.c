@@ -42,6 +42,7 @@
 
 #include <glib/gi18n.h>
 #include <eel/eel-stock-dialogs.h>
+#include <math.h>
 
 #include <libnautilus-private/nautilus-file.h>
 #include <libnautilus-private/nautilus-file-utilities.h>
@@ -2483,8 +2484,8 @@ preview_image_enter_notify_cb (GtkWidget *widget,
 			      (preview_width - emblem_width) / 2,
 			      (preview_height - emblem_height) / 2,
 			      emblem_width, emblem_height,
-			      (preview_width - emblem_width) / 2.0,
-			      (preview_height - emblem_height) / 2.0,
+			      floor ((preview_width - emblem_width) / 2.0),
+			      floor ((preview_height - emblem_height) / 2.0),
 			      1.0, 1.0,
 			      GDK_INTERP_NEAREST, 255);
 
