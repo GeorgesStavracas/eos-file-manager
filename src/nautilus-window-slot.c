@@ -1054,21 +1054,66 @@ begin_location_change (NautilusWindowSlot *slot,
 	nautilus_profile_end (NULL);
 }
 
+static gboolean
+is_default_media_location (GFile *location)
+{
+        NautilusFile *file = nautilus_file_get (location);
+        char *name = nautilus_file_get_name (file);
+        gboolean res = FALSE;
+
+        static const char *default_media_dirs[] = {
+                "default_images",
+                "default_music",
+                "default_videos",
+        };
+
+        if (nautilus_file_is_directory (file)) {
+                int i = 0;
+
+                for (i = 0; i < G_N_ELEMENTS (default_media_dirs); i++) {
+                        if (strcmp (name, default_media_dirs[i]) == 0) {
+                                res = TRUE;
+                        }
+                }
+        }
+
+        g_free (name);
+        nautilus_file_unref (file);
+
+        return res;
+}
+
 static void
 nautilus_window_slot_set_location (NautilusWindowSlot *slot,
 				   GFile *location)
 {
 	GFile *old_location;
+        gboolean update_path_bar = TRUE;
 
 	if (slot->details->location &&
 	    g_file_equal (location, slot->details->location)) {
 		return;
 	}
 
+        if (slot->details->location) {
+                NautilusFile *old_file = nautilus_file_get (slot->details->location);
+
+                if (nautilus_file_is_user_special_directory (old_file, G_USER_DIRECTORY_MUSIC) ||
+                    nautilus_file_is_user_special_directory (old_file, G_USER_DIRECTORY_PICTURES) ||
+                    nautilus_file_is_user_special_directory (old_file, G_USER_DIRECTORY_VIDEOS)) {
+                        update_path_bar = !is_default_media_location (location);
+                }
+
+                nautilus_file_unref (old_file);
+        }
+
 	old_location = slot->details->location;
 	slot->details->location = g_object_ref (location);
-	nautilus_path_bar_set_path (NAUTILUS_PATH_BAR (slot->details->path_bar),
-				    location);
+
+        if (update_path_bar) {
+                nautilus_path_bar_set_path (NAUTILUS_PATH_BAR (slot->details->path_bar),
+                                            slot->details->location);
+        }
 
 	if (slot == nautilus_window_get_active_slot (slot->details->window)) {
 		nautilus_window_sync_location_widgets (slot->details->window);
