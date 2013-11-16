@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nautilus\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-11 18:11+0100\n"
+"POT-Creation-Date: 2013-11-15 22:23-0800\n"
 "PO-Revision-Date: 2013-07-22 15:30-0300\n"
 "Last-Translator: Antonio Fernandes C. Neto <fernandesn@gnome.org>\n"
 "Language-Team: Brazilian Portuguese <gnome-pt_br-list@gnome.org>\n"
@@ -669,13 +669,13 @@ msgstr "Arquivo original"
 
 #: ../libnautilus-private/nautilus-file-conflict-dialog.c:253
 #: ../libnautilus-private/nautilus-file-conflict-dialog.c:284
-#: ../src/nautilus-properties-window.c:3275 ../src/nautilus-window-slot.c:2802
+#: ../src/nautilus-properties-window.c:3275 ../src/nautilus-window-slot.c:2847
 msgid "Size:"
 msgstr "Tamanho:"
 
 #: ../libnautilus-private/nautilus-file-conflict-dialog.c:256
 #: ../libnautilus-private/nautilus-file-conflict-dialog.c:287
-#: ../src/nautilus-properties-window.c:3257 ../src/nautilus-window-slot.c:2807
+#: ../src/nautilus-properties-window.c:3257 ../src/nautilus-window-slot.c:2852
 msgid "Type:"
 msgstr "Tipo:"
 
@@ -2494,7 +2494,7 @@ msgid "Send files by mail, instant message…"
 msgstr "Envia arquivos por e-mail, mensagem instantânea…"
 
 #. Some sort of failure occurred. How 'bout we tell the user?
-#: ../src/nautilus-application.c:232 ../src/nautilus-window-slot.c:1698
+#: ../src/nautilus-application.c:232 ../src/nautilus-window-slot.c:1743
 msgid "Oops! Something went wrong."
 msgstr "Opa! Alguma coisa deu errado."
 
@@ -3496,7 +3496,7 @@ msgstr "Erro ao carregar informações da imagem"
 
 #: ../src/nautilus-image-properties-page.c:708
 #: ../src/nautilus-list-model.c:372 ../src/nautilus-window-slot.c:693
-#: ../src/nautilus-window-slot.c:2346
+#: ../src/nautilus-window-slot.c:2391
 msgid "Loading…"
 msgstr "Carregando…"
 
@@ -5410,40 +5410,40 @@ msgstr "Opções de Zoom"
 msgid "_Up"
 msgstr "A_cima"
 
-#: ../src/nautilus-window-slot.c:1373 ../src/nautilus-window-slot.c:1547
+#: ../src/nautilus-window-slot.c:1418 ../src/nautilus-window-slot.c:1592
 #, c-format
 msgid "Unable to load location"
 msgstr "Não foi possível carregar o local"
 
-#: ../src/nautilus-window-slot.c:1702
+#: ../src/nautilus-window-slot.c:1747
 msgid "Unable to display the contents of this folder."
 msgstr "Não é possível exibir o conteúdo desta pasta."
 
-#: ../src/nautilus-window-slot.c:1704
+#: ../src/nautilus-window-slot.c:1749
 msgid "This location doesn't appear to be a folder."
 msgstr "Este local não parece ser uma pasta."
 
-#: ../src/nautilus-window-slot.c:1709
+#: ../src/nautilus-window-slot.c:1754
 msgid ""
 "Unable to find the requested file. Please check the spelling and try again."
 msgstr ""
 "Não foi possível localizar o arquivo solicitado. Verifique a grafia e tente "
 "novamente."
 
-#: ../src/nautilus-window-slot.c:1714
+#: ../src/nautilus-window-slot.c:1759
 #, c-format
 msgid "“%s” locations are not supported."
 msgstr "Locais \"%s\" não são suportados."
 
-#: ../src/nautilus-window-slot.c:1717
+#: ../src/nautilus-window-slot.c:1762
 msgid "Unable to handle this kind of location."
 msgstr "Não é possível manipular esse tipo de local"
 
-#: ../src/nautilus-window-slot.c:1722
+#: ../src/nautilus-window-slot.c:1767
 msgid "Unable to access the requested location."
 msgstr "Não foi possível acessar o local solicitado"
 
-#: ../src/nautilus-window-slot.c:1725
+#: ../src/nautilus-window-slot.c:1770
 msgid "Don't have permission to access the requested location."
 msgstr "Você não tem permissões para acessar o local solicitado."
 
@@ -5453,7 +5453,7 @@ msgstr "Você não tem permissões para acessar o local solicitado."
 #. * But this case is also hit for legitimate web addresses when
 #. * the proxy is set up wrong.
 #.
-#: ../src/nautilus-window-slot.c:1733
+#: ../src/nautilus-window-slot.c:1778
 msgid ""
 "Unable to find the requested location. Please check the spelling or the "
 "network settings."
@@ -5461,50 +5461,50 @@ msgstr ""
 "Não é possível localizar o local solicitado. Por favor, verifique a grafia "
 "ou as configurações de rede"
 
-#: ../src/nautilus-window-slot.c:1744
+#: ../src/nautilus-window-slot.c:1789
 #, c-format
 msgid "Unhandled error message: %s"
 msgstr "Mensagem de erro sem tratamento: %s"
 
-#: ../src/nautilus-window-slot.c:2346
+#: ../src/nautilus-window-slot.c:2391
 msgid "Searching…"
 msgstr "Pesquisando…"
 
-#: ../src/nautilus-window-slot.c:2583
+#: ../src/nautilus-window-slot.c:2628
 msgid "Copy"
 msgstr "Copiar"
 
-#: ../src/nautilus-window-slot.c:2585
+#: ../src/nautilus-window-slot.c:2630
 msgid "Move"
 msgstr "Mover"
 
-#: ../src/nautilus-window-slot.c:2587
+#: ../src/nautilus-window-slot.c:2632
 msgid "Open"
 msgstr "Abrir"
 
-#: ../src/nautilus-window-slot.c:2722
+#: ../src/nautilus-window-slot.c:2767
 #, c-format
 msgid "%s and %'d item"
 msgid_plural "%s and %'d items"
 msgstr[0] "%s e %'d item"
 msgstr[1] "%s e %'d itens"
 
-#: ../src/nautilus-window-slot.c:2728 ../src/nautilus-window-slot.c:2778
+#: ../src/nautilus-window-slot.c:2773 ../src/nautilus-window-slot.c:2823
 #, c-format
 msgid "%'d item"
 msgid_plural "%'d items"
 msgstr[0] "%'d item"
 msgstr[1] "%'d itens"
 
-#: ../src/nautilus-window-slot.c:2802
+#: ../src/nautilus-window-slot.c:2847
 msgid "Total Size:"
 msgstr "Tamanho total:"
 
-#: ../src/nautilus-window-slot.c:2812
+#: ../src/nautilus-window-slot.c:2857
 msgid "Date:"
 msgstr "Data"
 
-#: ../src/nautilus-window-slot.c:2842
+#: ../src/nautilus-window-slot.c:2887
 msgid "Add Folder"
 msgstr "Adicionar Pasta"
 
