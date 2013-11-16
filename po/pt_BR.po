@@ -18,6 +18,7 @@
 # Rafael Ferreira <rafael.f.f1@gmail.com>, 2012
 # RenatoP <renato@endlessm.com>, 2013
 # rpitanga <pitanga@endlessm.com>, 2013
+# rshuler <roddy@endlessm.com>, 2013
 # Rodrigo Flores <rodrigomarquesflores@gmail.com>, 2007
 # Michele.silva <michele@endlessm.com>, 2013
 # VIVIANE <viviane@endlessm.com>, 2013
@@ -26,8 +27,8 @@ msgstr ""
 "Project-Id-Version: eos-file-manager\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-15 22:23-0800\n"
-"PO-Revision-Date: 2013-11-14 21:08+0000\n"
-"Last-Translator: Michele.silva <michele@endlessm.com>\n"
+"PO-Revision-Date: 2013-11-16 08:55+0000\n"
+"Last-Translator: rshuler <roddy@endlessm.com>\n"
 "Language-Team: Portuguese (http://www.transifex.com/projects/p/teams/language/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -331,7 +332,7 @@ msgstr "_Copiar aqui"
 
 #: ../libnautilus-private/nautilus-dnd.c:784
 msgid "_Link Here"
-msgstr "_link aqui"
+msgstr "_Link aqui"
 
 #: ../libnautilus-private/nautilus-dnd.c:789
 msgid "Set as _Background"
@@ -1447,8 +1448,8 @@ msgstr[1] "Move %d itens de volta à \"%s\""
 #, c-format
 msgid "Move %d item to '%s'"
 msgid_plural "Move %d items to '%s'"
-msgstr[0] "Move %d item para \"%s\""
-msgstr[1] "Move %d itens para \"%s\""
+msgstr[0] "Mover %d item para \"%s\""
+msgstr[1] "Mover %d itens para \"%s\""
 
 #: ../libnautilus-private/nautilus-file-undo-operations.c:374
 #, c-format
@@ -1494,7 +1495,7 @@ msgstr "_Refazer a restauração da lixeira"
 #, c-format
 msgid "Move %d item back to trash"
 msgid_plural "Move %d items back to trash"
-msgstr[0] "Move %d item de volta à lixeira"
+msgstr[0] "Mover %d item de volta à lixeira"
 msgstr[1] "Mover %d itens de volta à lixeira"
 
 #: ../libnautilus-private/nautilus-file-undo-operations.c:395
@@ -1502,7 +1503,7 @@ msgstr[1] "Mover %d itens de volta à lixeira"
 #, c-format
 msgid "Restore %d item from trash"
 msgid_plural "Restore %d items from trash"
-msgstr[0] "Restaura %d item da lixeira"
+msgstr[0] "Restaurar %d item da lixeira"
 msgstr[1] "Restaurar %d itens da lixeira"
 
 #: ../libnautilus-private/nautilus-file-undo-operations.c:399
@@ -1519,14 +1520,14 @@ msgstr "Restaurar \"%s\" da lixeira"
 #, c-format
 msgid "Delete %d copied item"
 msgid_plural "Delete %d copied items"
-msgstr[0] "Remove %d item copiado"
+msgstr[0] "Remover %d item copiado"
 msgstr[1] "Remover %d itens copiados"
 
 #: ../libnautilus-private/nautilus-file-undo-operations.c:407
 #, c-format
 msgid "Copy %d item to '%s'"
 msgid_plural "Copy %d items to '%s'"
-msgstr[0] "Copia %d item para \"%s\""
+msgstr[0] "Copiar %d item para \"%s\""
 msgstr[1] "Copiar %d itens para \"%s\""
 
 #: ../libnautilus-private/nautilus-file-undo-operations.c:411
@@ -1574,7 +1575,7 @@ msgstr[1] "Remove %d itens duplicados"
 #, c-format
 msgid "Duplicate %d item in '%s'"
 msgid_plural "Duplicate %d items in '%s'"
-msgstr[0] "Duplica %d item em \"%s\""
+msgstr[0] "Duplicar %d item em \"%s\""
 msgstr[1] "Duplicar %d itens em \"%s\""
 
 #: ../libnautilus-private/nautilus-file-undo-operations.c:433
@@ -1608,14 +1609,14 @@ msgstr "_Refazer a duplicação"
 #, c-format
 msgid "Delete links to %d item"
 msgid_plural "Delete links to %d items"
-msgstr[0] "Remove o link para %d item"
+msgstr[0] "Remover o link para %d item"
 msgstr[1] "Remover links para %d itens"
 
 #: ../libnautilus-private/nautilus-file-undo-operations.c:452
 #, c-format
 msgid "Create links to %d item"
 msgid_plural "Create links to %d items"
-msgstr[0] "Cria links para %d item"
+msgstr[0] "Criar links para %d item"
 msgstr[1] "Criar links para %d itens"
 
 #: ../libnautilus-private/nautilus-file-undo-operations.c:456
@@ -1693,7 +1694,7 @@ msgstr "_Refazer renomeação"
 #, c-format
 msgid "Move %d item to trash"
 msgid_plural "Move %d items to trash"
-msgstr[0] "Move %d arquivo para a lixeira"
+msgstr[0] "Mover %d arquivo para a lixeira"
 msgstr[1] "Mover %d arquivos para a lixeira"
 
 #: ../libnautilus-private/nautilus-file-undo-operations.c:996
@@ -1954,7 +1955,7 @@ msgstr "Tipo de clique usado para abrir arquivos"
 msgid ""
 "Possible values are \"single\" to launch files on a single click, or "
 "\"double\" to launch them on a double click."
-msgstr "Valores possíveis são \"único\" para abrir arquivos com um único clique, ou \"duplo\" para abrir arquivos com clique duplo."
+msgstr "Valores possíveis são \"single\" para abrir arquivos com um único clique, ou \"double\" para abrir arquivos com clique duplo."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:13
 msgid "What to do with executable text files when activated"
@@ -1966,7 +1967,7 @@ msgid ""
 "double clicked). Possible values are \"launch\" to launch them as programs, "
 "\"ask\" to ask what to do via a dialog, and \"display\" to display them as "
 "text files."
-msgstr "O que fazer com arquivos de texto executáveis quando eles são ativados (por um clique ou um clique-duplo). Valores possíveis são \"abrir\" para abri-los como programas, \"perguntar\" para perguntar através de um diálogo e \"exibir\" para exibi-los como arquivos de texto."
+msgstr "O que fazer com arquivos de texto executáveis quando eles são ativados (por um clique ou um clique-duplo). Valores possíveis são \"launch\" para abri-los como programas, \"ask\" para perguntar através de um diálogo e \"display\" para exibi-los como arquivos de texto."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:15
 msgid "Show the package installer for unknown mime types"
@@ -2023,7 +2024,7 @@ msgid ""
 "\"never\" then never bother to thumbnail files, just use a generic icon. "
 "Despite what the name may suggest, this applies to any previewable file "
 "type."
-msgstr "Compromisso de quando mostrar uma imagem como miniatura. Se definido como \"sempre\", então sempre mostrar a miniatura, mesmo se o arquivo estiver em um servidor remoto. Se definido como \"apenas local\", mostrar miniatura apenas em sistemas de arquivos locais. Se definido como \"nunca\", então nunca gerar miniaturas, usar apenas um ícone genérico."
+msgstr "Compromisso de quando mostrar uma imagem como miniatura. Se definido como \"always\", então sempre mostrar a miniatura, mesmo se o arquivo estiver em um servidor remoto. Se definido como \"local-only\", mostrar miniatura apenas em sistemas de arquivos locais. Se definido como \"never\", então nunca gerar miniaturas, usar apenas um ícone genérico."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:25
 msgid "Maximum image size for thumbnailing"
@@ -2054,7 +2055,7 @@ msgstr "Modo de ordenação padrão"
 msgid ""
 "The default sort-order for items in the icon view. Possible values are "
 "\"name\", \"size\", \"type\" and \"mtime\"."
-msgstr "A ordem padrão para itens na visão em lista. Valores possíveis são \"nome\", \"tamanho\", \"tipo\" e \"mtime\"."
+msgstr "A ordem padrão para itens na visão em lista. Valores possíveis são \"name\", \"size\", \"type\" e \"mtime\"."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:31
 msgid "Reverse sort order in new windows"
@@ -2077,7 +2078,7 @@ msgid ""
 "When a folder is visited this viewer is used unless you have selected "
 "another view for that particular folder. Possible values are \"list-view\", "
 "and \"icon-view\"."
-msgstr "Quando uma pasta é visitada este visualizador é usado a não ser que você tenha selecionado outra visão para a pasta em particular. Valores possíveis são \"lista\", \"ícones\" e \"compacta\"."
+msgstr "Quando uma pasta é visitada este visualizador é usado a não ser que você tenha selecionado outra visão para a pasta em particular. Valores possíveis são \"list-view\" (lista), e \"icon-view\" (ícones)."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:35
 msgid "Whether to show hidden files"
@@ -2087,7 +2088,7 @@ msgstr "Mostrar arquivos ocultos"
 msgid ""
 "This key is deprecated and ignored. The \"show-hidden\" key from "
 "\"org.gtk.Settings.FileChooser\" is now used instead."
-msgstr "Esta chave está obsoleta e será ignorada.  A chave “mostrar escondida” em “org.gtk.Settings.FileChooser” é usada agora."
+msgstr "Esta chave está obsoleta e será ignorada.  A chave “show-hidden” em “org.gtk.Settings.FileChooser” é usada agora."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:37
 msgid "Bulk rename utility"
@@ -2112,7 +2113,7 @@ msgid ""
 "actual number of captions shown depends on the zoom level. Some possible "
 "values are: \"size\", \"type\", \"date_modified\", \"owner\", \"group\", "
 "\"permissions\", and \"mime_type\"."
-msgstr "Uma lista de legendas abaixo de um ícone na visão em ícones e na área de trabalho. O número de legendas mostradas depende do nível de zoom. Valores possíveis são: \"tamanho\", \"tipo\", \"data da última modificação\", \"data da última alteração\", \"data do último acesso, \"proprietário\", \"grupo\", \"permissões\", \"permissões octais\" e \"tipo mime\"."
+msgstr "Uma lista de legendas abaixo de um ícone na visão em ícones e na área de trabalho. O número de legendas mostradas depende do nível de zoom. Valores possíveis são: \"size\" (tamanho), type (tipo), \"date_modified\" (data da última modificação), \"date_changed\" (data da última alteração), \"date_accessed\" (data do último acesso), \"owner\" (proprietário), \"group\" (grupo), \"permissions\" (permissões), \"octal_permissions\" (permissões octais) e \"mime_type\" (tipo mime)."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:41
 msgid "Default icon zoom level"
@@ -4019,7 +4020,7 @@ msgstr "Salvar pesquisa como"
 
 #: ../src/nautilus-view.c:1595
 msgid "Search _name:"
-msgstr "Pesquisar_nome:"
+msgstr "Pesquisar _nome:"
 
 #: ../src/nautilus-view.c:1612
 msgid "_Folder:"
@@ -4284,7 +4285,7 @@ msgstr "Seleciona todos e apenas os itens que não estão selecionados atualment
 #: ../src/nautilus-view.c:7021 ../src/nautilus-view.c:8574
 msgid "Ma_ke Link"
 msgid_plural "Ma_ke Links"
-msgstr[0] "Criar _link"
+msgstr[0] "Cri_ar link"
 msgstr[1] "Cri_ar links"
 
 #. tooltip
@@ -5238,15 +5239,15 @@ msgstr "Abrir"
 #, c-format
 msgid "%s and %'d item"
 msgid_plural "%s and %'d items"
-msgstr[0] "%s and %'d items"
-msgstr[1] "%s e %´d items"
+msgstr[0] "%s e %'d item"
+msgstr[1] "%s e %'d itens"
 
 #: ../src/nautilus-window-slot.c:2773 ../src/nautilus-window-slot.c:2823
 #, c-format
 msgid "%'d item"
 msgid_plural "%'d items"
-msgstr[0] "%´d items"
-msgstr[1] "%'d items"
+msgstr[0] "%'d item"
+msgstr[1] "%'d itens"
 
 #: ../src/nautilus-window-slot.c:2847
 msgid "Total Size:"
