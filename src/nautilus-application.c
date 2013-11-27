@@ -1743,6 +1743,40 @@ on_slot_removed (NautilusWindow      *window,
 	g_signal_handlers_disconnect_by_func (slot, on_slot_location_changed, application);
 }
 
+typedef enum {
+        WINDOW_TILE_EDGE_LEFT,
+        WINDOW_TILE_EDGE_RIGHT
+} WindowTileEdge;
+
+static void
+window_tile (GtkWindow *window,
+             WindowTileEdge edge)
+{
+        GdkScreen *screen = gdk_screen_get_default ();
+        int x, y, width, height;
+        GdkRectangle rect;
+
+        gdk_screen_get_monitor_workarea (screen, 0, &rect);
+
+        width = rect.width / 2;
+        height = rect.height;
+
+        switch (edge) {
+                case WINDOW_TILE_EDGE_LEFT:
+                        x = 0;
+                        y = 0;
+                        break;
+
+                case WINDOW_TILE_EDGE_RIGHT:
+                        x = rect.width / 2;
+                        y = 0;
+                        break;
+        }
+
+        gtk_window_move (window, x, y);
+        gtk_window_resize (window, width, height);
+}
+
 static void
 nautilus_application_window_added (GtkApplication *app,
 				   GtkWindow *window)
@@ -1752,6 +1786,17 @@ nautilus_application_window_added (GtkApplication *app,
 
 	g_signal_connect (window, "slot-added", G_CALLBACK (on_slot_added), app);
 	g_signal_connect (window, "slot-removed", G_CALLBACK (on_slot_removed), app);
+
+        /* See issue #1041 for the logic; the first window is "tiled" to the left,
+         * the second window is "tiled" to the right. any other window is left alone
+         */
+        if (g_list_length (gtk_application_get_windows (app)) == 1) {
+                window_tile (window, WINDOW_TILE_EDGE_LEFT);
+        }
+
+        if (g_list_length (gtk_application_get_windows (app)) == 2) {
+                window_tile (window, WINDOW_TILE_EDGE_RIGHT);
+        }
 }
 
 static void
