@@ -6202,7 +6202,7 @@ action_set_as_wallpaper_callback (GtkAction    *action,
 {
 	GList *selection;
 
-	/* Copy the item to Pictures/Wallpaper since it may be
+	/* Copy the item to Pictures/Wallpapers, since it may be
 	   remote. Then set it as the current wallpaper. */
 
 	g_assert (NAUTILUS_IS_VIEW (view));
@@ -6212,19 +6212,22 @@ action_set_as_wallpaper_callback (GtkAction    *action,
 	if (can_set_wallpaper (selection)
 	    && selection_not_empty_in_menu_callback (view, selection)) {
 		NautilusFile *file;
+		const char *target_path;
 		char *target_uri;
 		GList *uris;
-		GFile *parent;
 		GFile *target;
 
-		file = NAUTILUS_FILE (selection->data);
+		target_path = g_get_user_special_dir_for_desktop_id ("gnome-wallpapers.desktop");
+		if (target_path == NULL) {
+			target_path = g_get_user_special_dir (G_USER_DIRECTORY_PICTURES);
+		}
+		target = g_file_new_for_path (target_path);
 
-		parent = g_file_new_for_path (g_get_user_special_dir (G_USER_DIRECTORY_PICTURES));
-		target = g_file_get_child (parent, "Wallpapers");
-		g_object_unref (parent);
 		g_file_make_directory_with_parents (target, NULL, NULL);
 		target_uri = g_file_get_uri (target);
 		g_object_unref (target);
+
+		file = NAUTILUS_FILE (selection->data);
 		uris = g_list_prepend (NULL, nautilus_file_get_uri (file));
 		nautilus_file_operations_copy_move (uris,
 						    NULL,
