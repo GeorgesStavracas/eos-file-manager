@@ -548,7 +548,7 @@ path_bar_location_changed_callback (GtkWidget          *widget,
 	}
 }
 
-static void
+static gboolean
 path_bar_path_event_callback (NautilusPathBar    *path_bar,
 			      GFile              *location,
 			      GdkEventButton     *event,
@@ -558,6 +558,9 @@ path_bar_path_event_callback (NautilusPathBar    *path_bar,
 	int mask;
 	NautilusView *view;
 	char *uri;
+	gboolean retval;
+
+	retval = FALSE;
 
 	if (event->type == GDK_BUTTON_RELEASE) {
 		mask = event->state & gtk_accelerator_get_default_mod_mask ();
@@ -578,8 +581,11 @@ path_bar_path_event_callback (NautilusPathBar    *path_bar,
 			uri = g_file_get_uri (location);
 			nautilus_view_pop_up_location_context_menu (view, event, uri);
 			g_free (uri);
+			retval = TRUE;
 		}
 	}
+
+	return retval;
 }
 
 static void
