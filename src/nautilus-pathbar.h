@@ -48,7 +48,7 @@ struct _NautilusPathBarClass
 
   	void (* path_clicked)   (NautilusPathBar  *path_bar,
 				 GFile             *location);
-        void (* path_event)     (NautilusPathBar  *path_bar,
+        gboolean (* path_event) (NautilusPathBar  *path_bar,
                                  GdkEventButton   *event,
                                  GFile            *location);
 };
