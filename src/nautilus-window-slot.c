@@ -616,11 +616,17 @@ status_event_box_clicked_cb (GtkWidget *widget,
 static void
 create_path_bar_box (NautilusWindowSlot *slot)
 {
-	GtkWidget *box;
+	GtkWidget *box, *frame;
+
+	frame = gtk_frame_new (NULL);
+	gtk_box_pack_end (GTK_BOX (slot), frame, FALSE, FALSE, 0);
+	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_NONE);
+	gtk_style_context_add_class (gtk_widget_get_style_context (frame),
+				     GTK_STYLE_CLASS_BACKGROUND);
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, PATH_BAR_BOX_SPACING);
 	gtk_container_set_border_width (GTK_CONTAINER (box), PATH_BAR_BOX_BORDER);
-	gtk_box_pack_end (GTK_BOX (slot), box, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (frame), box);
 	slot->details->status_box = box;
 
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, PATH_BAR_BOX_SPACING);
@@ -650,7 +656,7 @@ create_path_bar_box (NautilusWindowSlot *slot)
 
 	update_status_box (slot);
 
-	gtk_widget_show_all (slot->details->status_box);
+	gtk_widget_show_all (frame);
 }
 
 static void
