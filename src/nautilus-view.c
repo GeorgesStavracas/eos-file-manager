@@ -288,6 +288,7 @@ static void     clipboard_changed_callback                     (NautilusClipboar
 								NautilusView      *view);
 static void     open_one_in_new_window                         (gpointer              data,
 								gpointer              callback_data);
+static void     unpopulate_option_menu_items                   (NautilusView      *view);
 static void     schedule_update_menus                          (NautilusView      *view);
 static void     remove_update_menus_timeout_callback           (NautilusView      *view);
 static void     schedule_update_status                          (NautilusView      *view);
@@ -337,7 +338,8 @@ nautilus_view_unmerge_menus (NautilusView *view)
 {
 	g_return_if_fail (NAUTILUS_IS_VIEW (view));
 
-	NAUTILUS_VIEW_CLASS (G_OBJECT_GET_CLASS (view))->unmerge_menus (view);}
+	NAUTILUS_VIEW_CLASS (G_OBJECT_GET_CLASS (view))->unmerge_menus (view);
+}
 
 static char *
 real_get_backing_uri (NautilusView *view)
@@ -2706,6 +2708,8 @@ real_unmerge_menus (NautilusView *view)
 	if (ui_manager == NULL) {
 		return;
 	}
+
+	unpopulate_option_menu_items (view);
 
 	nautilus_ui_unmerge_ui (ui_manager,
 				&view->details->dir_merge_id,
@@ -7259,6 +7263,34 @@ populate_option_menu_items (NautilusView *view)
 					      NAUTILUS_ACTION_REDO);
 	nautilus_option_menu_item_add_action (NAUTILUS_OPTION_MENU_ITEM (undo_menu_item),
 					      action);
+}
+
+static void
+unpopulate_option_menu_items (NautilusView *view)
+{
+	GtkWidget *undo_menu_item;
+	GtkActionGroup *action_group;
+	GtkUIManager *ui_manager;
+	GtkAction *action;
+
+	action_group = view->details->dir_action_group;
+	if (!action_group) {
+		return;
+	}
+
+	ui_manager = nautilus_view_get_ui_manager (view);
+
+	undo_menu_item = gtk_ui_manager_get_widget (ui_manager, NAUTILUS_VIEW_MENU_PATH_UNDO);
+
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_UNDO);
+	nautilus_option_menu_item_remove_action (NAUTILUS_OPTION_MENU_ITEM (undo_menu_item),
+						 action);
+
+	action = gtk_action_group_get_action (action_group,
+					      NAUTILUS_ACTION_REDO);
+	nautilus_option_menu_item_remove_action (NAUTILUS_OPTION_MENU_ITEM (undo_menu_item),
+						 action);
 }
 
 static void
