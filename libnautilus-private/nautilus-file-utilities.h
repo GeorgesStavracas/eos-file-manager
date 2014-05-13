@@ -45,7 +45,6 @@ char *   nautilus_get_home_directory_uri             (void);
 gboolean nautilus_is_desktop_directory_file          (GFile *dir,
 						      const char *filename);
 gboolean nautilus_is_root_directory                  (GFile *dir);
-gboolean nautilus_is_default_xdg_directory           (GFile *dir);
 gboolean nautilus_is_desktop_directory               (GFile *dir);
 gboolean nautilus_is_home_directory                  (GFile *dir);
 gboolean nautilus_is_home_directory_file             (GFile *dir,
