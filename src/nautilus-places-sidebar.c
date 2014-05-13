@@ -537,6 +537,18 @@ update_places (NautilusPlacesSidebar *sidebar)
 	network_mounts = network_volumes = NULL;
 	volume_monitor = sidebar->volume_monitor;
 
+	/* home folder */
+	mount_uri = nautilus_get_home_directory_uri ();
+	icon = g_themed_icon_new (NAUTILUS_ICON_HOME);
+	add_place (sidebar->tree_data, NULL,
+		   PLACES_BUILT_IN,
+		   SECTION_COMPUTER,
+		   _("Home"), icon, mount_uri,
+		   NULL, NULL, NULL, 0,
+		   _("Open your personal folder"));
+	g_object_unref (icon);
+	g_free (mount_uri);
+
 	/* add built in bookmarks (XDG directories) */
 	add_special_dirs (sidebar->tree_data);
 
