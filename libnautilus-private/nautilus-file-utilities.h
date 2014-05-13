@@ -39,7 +39,6 @@ char *   nautilus_get_user_directory                 (void);
 char *   nautilus_get_desktop_directory              (void);
 GFile *  nautilus_get_desktop_location               (void);
 char *   nautilus_get_desktop_directory_uri          (void);
-GFile *  nautilus_get_initial_location               (void);
 GList *  nautilus_get_default_xdg_directories        (void);
 char *   nautilus_get_home_directory_uri             (void);
 gboolean nautilus_is_desktop_directory_file          (GFile *dir,
