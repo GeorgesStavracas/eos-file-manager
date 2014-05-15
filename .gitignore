@@ -8,6 +8,7 @@
 /.*.sw[nop]
 /.deps
 /.dirstamp
+/.gitignore
 /.libs
 /ChangeLog
 /GPATH
@@ -65,6 +66,7 @@
 /po/Makefile.in
 /po/Makefile.in.in
 /po/POTFILES
+/po/eos-file-manager.pot
 /po/stamp-it
 /so_locations
 /src/Makefile.in

@@ -752,45 +752,6 @@ nautilus_get_default_xdg_directories (void)
 	return g_list_reverse (retval);
 }
 
-gboolean
-nautilus_is_default_xdg_directory (GFile *dir)
-{
-	GList *default_dirs, *l;
-	GFile *default_dir;
-	GUserDirectory user_dir;
-	gboolean res = FALSE;
-
-	default_dirs = nautilus_get_default_xdg_directories ();
-	for (l = default_dirs; l != NULL; l = l->next) {
-		user_dir = GPOINTER_TO_INT (l->data);
-		default_dir = g_file_new_for_path (g_get_user_special_dir (user_dir));
-		res = g_file_equal (dir, default_dir);
-		g_object_unref (default_dir);
-
-		if (res) {
-			break;
-		}
-	}
-
-	return res;
-}
-
-GFile *
-nautilus_get_initial_location (void)
-{
-	const gchar *path;
-	GUserDirectory user_dir;
-
-	for (user_dir = 0; user_dir < G_N_ELEMENTS (default_dirs); user_dir++) {
-		path = g_get_user_special_dir (default_dirs[user_dir]);
-		if (path != NULL) {
-			return g_file_new_for_path (path);
-		}
-	}
-
-	return g_file_new_for_path (g_get_home_dir ());
-}
-
 char *
 nautilus_get_home_directory_uri (void)
 {
