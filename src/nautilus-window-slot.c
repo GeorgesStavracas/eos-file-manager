@@ -1164,19 +1164,12 @@ viewed_file_changed_callback (NautilusFile *file,
 			GFile *go_to_file;
 			GFile *parent;
 			GFile *location;
-			GMount *mount;
 
 			parent = NULL;
 			location = nautilus_file_get_location (file);
 
-			if (g_file_is_native (location)) {
-				mount = nautilus_get_mounted_mount_for_root (location);
-
-				if (mount == NULL) {
-					parent = g_file_get_parent (location);
-				}
-
-				g_clear_object (&mount);
+			if (g_file_is_native (location) && !nautilus_file_is_in_mount (file)) {
+				parent = g_file_get_parent (location);
 			}
 
 			if (parent != NULL) {
