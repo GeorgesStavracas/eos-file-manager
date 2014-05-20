@@ -138,6 +138,7 @@ struct NautilusFileDetails
 
 	/* Mount for mountpoint or the references GMount for a "mountable" */
 	GMount *mount;
+	GMount *parent_mount;
 	
 	/* boolean fields: bitfield to save space, since there can be
            many NautilusFile objects. */
@@ -273,6 +274,8 @@ gboolean      nautilus_file_set_display_name               (NautilusFile        
 							    const char             *edit_name,
 							    gboolean                custom);
 void          nautilus_file_set_mount                      (NautilusFile           *file,
+							    GMount                 *mount);
+void          nautilus_file_set_parent_mount               (NautilusFile           *file,
 							    GMount                 *mount);
 
 /* Return true if the top lefts of files in this directory should be

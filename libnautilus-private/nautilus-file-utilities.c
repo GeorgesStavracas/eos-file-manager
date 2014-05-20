@@ -921,8 +921,9 @@ nautilus_is_desktop_directory (GFile *dir)
 	return g_file_equal (dir, desktop_dir);
 }
 
-GMount *
-nautilus_get_mounted_mount_for_root (GFile *location)
+static GMount *
+get_mounted_mount_internal (GFile *location,
+			    gboolean for_root)
 {
 	GVolumeMonitor *volume_monitor;
 	GList *mounts;
@@ -943,14 +944,16 @@ nautilus_get_mounted_mount_for_root (GFile *location)
 		}
 
 		root = g_mount_get_root (mount);
-		if (g_file_equal (location, root)) {
+		if (g_file_equal (location, root) ||
+		    (!for_root && g_file_has_prefix (location, root))) {
 			result = g_object_ref (mount);
 			break;
 		}
 
 		default_location = g_mount_get_default_location (mount);
 		if (!g_file_equal (default_location, root) &&
-		    g_file_equal (location, default_location)) {
+		    (g_file_equal (location, default_location) ||
+		     (!for_root && g_file_has_prefix (location, default_location)))) {
 			result = g_object_ref (mount);
 			break;
 		}
@@ -961,6 +964,18 @@ nautilus_get_mounted_mount_for_root (GFile *location)
 	g_list_free_full (mounts, g_object_unref);
 
 	return result;
+}
+
+GMount *
+nautilus_get_mounted_mount_for_root (GFile *location)
+{
+	return get_mounted_mount_internal (location, TRUE);
+}
+
+GMount *
+nautilus_get_mounted_mount_for_location (GFile *location)
+{
+	return get_mounted_mount_internal (location, FALSE);
 }
 
 char *

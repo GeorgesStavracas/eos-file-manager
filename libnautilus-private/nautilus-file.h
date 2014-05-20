@@ -195,6 +195,7 @@ gboolean                nautilus_file_is_in_trash                       (Nautilu
 gboolean                nautilus_file_is_in_recent                      (NautilusFile                   *file);
 gboolean                nautilus_file_is_in_desktop                     (NautilusFile                   *file);
 gboolean                nautilus_file_is_in_network                     (NautilusFile                   *file);
+gboolean                nautilus_file_is_in_mount                       (NautilusFile                   *file);
 gboolean		nautilus_file_is_home				(NautilusFile                   *file);
 gboolean                nautilus_file_is_desktop_directory              (NautilusFile                   *file);
 GError *                nautilus_file_get_file_info_error               (NautilusFile                   *file);

@@ -1712,20 +1712,7 @@ lacks_thumbnail (NautilusFile *file)
 static gboolean
 lacks_mount (NautilusFile *file)
 {
-	return (!file->details->mount_is_up_to_date &&
-		(
-		 /* Unix mountpoint, could be a GMount */
-		 file->details->is_mountpoint ||
-		 
-		 /* The toplevel directory of something */
-		 (file->details->type == G_FILE_TYPE_DIRECTORY &&
-		  nautilus_file_is_self_owned (file)) ||
-		 
-		 /* Mountable, could be a mountpoint */
-		 (file->details->type == G_FILE_TYPE_MOUNTABLE)
-
-		 )
-		);
+	return !file->details->mount_is_up_to_date;
 }
 
 static gboolean
@@ -3977,7 +3964,7 @@ mount_state_free (MountState *state)
 }
 
 static void
-got_mount (MountState *state, GMount *mount)
+got_mount (MountState *state, GMount *mount, GMount *prefix_mount)
 {
 	NautilusDirectory *directory;
 	NautilusFile *file;
@@ -3991,6 +3978,7 @@ got_mount (MountState *state, GMount *mount)
 
 	file->details->mount_is_up_to_date = TRUE;
 	nautilus_file_set_mount (file, mount);
+	nautilus_file_set_parent_mount (file, prefix_mount);
 
 	nautilus_directory_async_state_changed (directory);
 	nautilus_file_changed (file);
@@ -4033,25 +4021,28 @@ find_enclosing_mount_callback (GObject *source_object,
 		g_object_unref (location);
 	}
 
-	got_mount (state, mount);
+	got_mount (state, mount, NULL);
 
 	if (mount) {
 		g_object_unref (mount);
 	}
 }
 
-static GMount *
-get_mount_at (GFile *target)
+static void
+get_mount_at (GFile    *target,
+	      GMount **mount_out,
+	      GMount **prefix_mount_out)
 {
 	GVolumeMonitor *monitor;
 	GFile *root;
 	GList *mounts, *l;
-	GMount *found;
-	
+	GMount *root_mount, *prefix_mount;
+
 	monitor = g_volume_monitor_get ();
 	mounts = g_volume_monitor_get_mounts (monitor);
 
-	found = NULL;
+	root_mount = prefix_mount = NULL;
+
 	for (l = mounts; l != NULL; l = l->next) {
 		GMount *mount = G_MOUNT (l->data);
 
@@ -4061,10 +4052,17 @@ get_mount_at (GFile *target)
 		root = g_mount_get_root (mount);
 
 		if (g_file_equal (target, root)) {
-			found = g_object_ref (mount);
+			root_mount = g_object_ref (mount);
+			g_clear_object (&prefix_mount);
+			prefix_mount = g_object_ref (mount);
 			break;
 		}
-		
+
+		if (g_file_has_prefix (target, root)) {
+			g_clear_object (&prefix_mount);
+			prefix_mount = g_object_ref (mount);
+		}
+
 		g_object_unref (root);
 	}
 
@@ -4072,7 +4070,15 @@ get_mount_at (GFile *target)
 	
 	g_object_unref (monitor);
 
-	return found;
+	if (mount_out)
+		*mount_out = root_mount;
+	else
+		g_clear_object (&root_mount);
+
+	if (prefix_mount_out)
+		*prefix_mount_out = prefix_mount;
+	else
+		g_clear_object (&prefix_mount);
 }
 
 static void
@@ -4109,28 +4115,47 @@ mount_start (NautilusDirectory *directory,
 	directory->details->mount_state = state;
 
 	if (file->details->type == G_FILE_TYPE_MOUNTABLE) {
+		/* Mountable, could be a mountpoint */
 		GFile *target;
-		GMount *mount;
+		GMount *mount, *prefix_mount;
 
 		mount = NULL;
+		prefix_mount = NULL;
 		target = nautilus_file_get_activation_location (file);
 		if (target != NULL) {
-			mount = get_mount_at (target);
+			get_mount_at (target, &mount, &prefix_mount);
 			g_object_unref (target);
 		}
 
-		got_mount (state, mount);
+		got_mount (state, mount, prefix_mount);
 
 		if (mount) {
 			g_object_unref (mount);
 		}
-	} else {
+		if (prefix_mount) {
+			g_object_unref (prefix_mount);
+		}
+
+	} else if (file->details->is_mountpoint ||
+		   (file->details->type == G_FILE_TYPE_DIRECTORY &&
+		    nautilus_file_is_self_owned (file))){
+		/* Unix mountpoint, could be a GMount.
+		 * Or the toplevel directory of something.
+		 */
 		g_file_find_enclosing_mount_async (location,
 						   G_PRIORITY_DEFAULT,
 						   state->cancellable,
 						   find_enclosing_mount_callback,
 						   state);
+	} else {
+		GMount *prefix_mount;
+
+		get_mount_at (location, NULL, &prefix_mount);
+		got_mount (state, NULL, prefix_mount);
+
+		g_clear_object (&prefix_mount);
 	}
+
 	g_object_unref (location);
 }
 
