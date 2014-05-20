@@ -810,6 +810,10 @@ finalize (GObject *object)
 		g_signal_handlers_disconnect_by_func (file->details->mount, file_mount_unmounted, file);
 		g_object_unref (file->details->mount);
 	}
+	if (file->details->parent_mount) {
+		g_signal_handlers_disconnect_by_func (file->details->parent_mount, file_mount_unmounted, file);
+		g_object_unref (file->details->parent_mount);
+	}
 
 	eel_ref_str_unref (file->details->filesystem_id);
 	g_free (file->details->trash_orig_path);
@@ -6579,6 +6583,29 @@ file_mount_unmounted (GMount *mount,
 	file = NAUTILUS_FILE (data);
 
 	nautilus_file_invalidate_attributes (file, NAUTILUS_FILE_ATTRIBUTE_MOUNT);
+}
+
+gboolean
+nautilus_file_is_in_mount (NautilusFile *file)
+{
+	return (file->details->parent_mount != NULL);
+}
+
+void
+nautilus_file_set_parent_mount (NautilusFile *file,
+				GMount *mount)
+{
+	if (file->details->parent_mount) {
+		g_signal_handlers_disconnect_by_func (file->details->parent_mount, file_mount_unmounted, file);
+		g_object_unref (file->details->parent_mount);
+		file->details->parent_mount = NULL;
+	}
+
+	if (mount) {
+		file->details->parent_mount = g_object_ref (mount);
+		g_signal_connect (mount, "unmounted",
+				  G_CALLBACK (file_mount_unmounted), file);
+	}
 }
 
 void
