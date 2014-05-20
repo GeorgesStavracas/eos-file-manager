@@ -145,7 +145,7 @@ nautilus_monitor_directory (GFile *location)
 	if (dir_monitor != NULL) {
 		ret->monitor = dir_monitor;
 	} else if (!g_file_is_native (location)) {
-		ret->mount = nautilus_get_mounted_mount_for_root (location);
+		ret->mount = nautilus_get_mounted_mount_for_location (location);
 		ret->location = g_object_ref (location);
 		ret->volume_monitor = g_volume_monitor_get ();
 	}
