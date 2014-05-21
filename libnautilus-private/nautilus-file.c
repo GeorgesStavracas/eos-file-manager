@@ -6588,7 +6588,7 @@ file_mount_unmounted (GMount *mount,
 gboolean
 nautilus_file_is_in_mount (NautilusFile *file)
 {
-	return (file->details->parent_mount != NULL);
+	return (file->details->parent_mount != NULL) || (file->details->mount != NULL);
 }
 
 void
