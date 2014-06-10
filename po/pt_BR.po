@@ -16,19 +16,19 @@
 # Jonh Wendell <jwendell@gnome.org>, 2009,2012
 # Krix Apolinário <krixapolinario@gmail.com>, 2009
 # Rafael Ferreira <rafael.f.f1@gmail.com>, 2012
-# RenatoP <renato@endlessm.com>, 2013
-# rpitanga <pitanga@endlessm.com>, 2013
-# rshuler <roddy@endlessm.com>, 2013
+# Renato Peixoto Pinto <renato@endlessm.com>, 2013
+# Ricardo Pitanga <pitanga@endlessm.com>, 2013
+# Roddy Shuler <roddy@endlessm.com>, 2013
 # Rodrigo Flores <rodrigomarquesflores@gmail.com>, 2007
-# Michele.silva <michele@endlessm.com>, 2013
-# VIVIANE <viviane@endlessm.com>, 2013
+# Silva <michele@endlessm.com>, 2013
+# VIVIANE NUNES ABREU SOARES <viviane@endlessm.com>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: eos-file-manager\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-15 22:23-0800\n"
 "PO-Revision-Date: 2013-11-20 10:35+0000\n"
-"Last-Translator: rshuler <roddy@endlessm.com>\n"
+"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Portuguese (http://www.transifex.com/projects/p/eos-file-manager/language/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
