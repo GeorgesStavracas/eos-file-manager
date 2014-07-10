@@ -1579,6 +1579,56 @@ init_gtk_accels (void)
 }
 
 static void
+theme_changed (GtkSettings *settings)
+{
+	static GtkCssProvider *provider = NULL;
+	gchar *theme;
+	GdkScreen *screen;
+
+	g_object_get (settings, "gtk-theme-name", &theme, NULL);
+	screen = gdk_screen_get_default ();
+
+	if (g_str_equal (theme, "Adwaita"))
+	{
+		if (provider == NULL)
+		{
+			GFile *file;
+
+			provider = gtk_css_provider_new ();
+			file = g_file_new_for_uri ("resource:///org/gnome/nautilus/Adwaita.css");
+			gtk_css_provider_load_from_file (provider, file, NULL);
+			g_object_unref (file);
+		}
+
+		gtk_style_context_add_provider_for_screen (screen,
+							   GTK_STYLE_PROVIDER (provider),
+							   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+	}
+	else if (provider != NULL)
+	{
+		gtk_style_context_remove_provider_for_screen (screen,
+							      GTK_STYLE_PROVIDER (provider));
+		g_clear_object (&provider);
+	}
+
+	g_free (theme);
+}
+
+static void
+setup_theme_extensions (void)
+{
+	GtkSettings *settings;
+
+	/* Set up a handler to load our custom css for Adwaita.
+	 * See https://bugzilla.gnome.org/show_bug.cgi?id=732959
+	 * for a more automatic solution that is still under discussion.
+	 */
+	settings = gtk_settings_get_default ();
+	g_signal_connect (settings, "notify::gtk-theme-name", G_CALLBACK (theme_changed), NULL);
+	theme_changed (settings);
+}
+
+static void
 nautilus_application_startup (GApplication *app)
 {
 	NautilusApplication *self = NAUTILUS_APPLICATION (app);
@@ -1594,6 +1644,7 @@ nautilus_application_startup (GApplication *app)
 
 	/* initialize the previewer singleton */
 	nautilus_previewer_get_singleton ();
+	setup_theme_extensions ();
 
 	/* create DBus manager */
 	self->priv->dbus_manager = nautilus_dbus_manager_new ();
