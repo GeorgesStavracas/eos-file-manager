@@ -451,6 +451,7 @@ add_special_dirs (SidebarTreeData *data)
 		GFile *root;
 		GIcon *icon;
 		char *mount_uri;
+		char *tooltip;
 		NautilusBookmark *bookmark;
 		guint idx;
 		GUserDirectory user_dir;
@@ -477,18 +478,20 @@ add_special_dirs (SidebarTreeData *data)
 		}
 
 		mount_uri = g_file_get_uri (root);
+		tooltip = g_file_get_parse_name (root);
 
 		add_place (data, NULL,
 			   PLACES_XDG_DIR,
 			   SECTION_COMPUTER,
 			   name, icon, mount_uri,
 			   NULL, NULL, NULL, idx,
-			   name);
+			   tooltip);
 
 		g_object_unref (root);
 		g_object_unref (icon);
 		g_free (name);
 		g_free (mount_uri);
+		g_free (tooltip);
 	}
 
 	g_list_free (dirs);
