@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: eos-file-manager\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-15 22:23-0800\n"
-"PO-Revision-Date: 2014-08-05 21:33+0000\n"
+"PO-Revision-Date: 2014-08-21 23:56+0000\n"
 "Last-Translator: Philip Chimento <philip.chimento@gmail.com>\n"
 "Language-Team: Arabic (http://www.transifex.com/projects/p/eos-file-manager/language/ar/)\n"
 "MIME-Version: 1.0\n"
@@ -2105,40 +2105,40 @@ msgstr "اعرض مثبت الحزم لأنواع mime المجهولة"
 msgid ""
 "Whether to show the user a package installer dialog in case an unknown mime "
 "type is opened, in order to search for an application to handle it."
-msgstr ""
+msgstr "سواء كانت لإظهار نافذة حوار لحزمة التثبيت في حال تم فتح نوع غير معروف يعمل بشكل صامت من أجل البحث عن تطبيق للتعامل معه."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:17
 msgid "Use extra mouse button events in Nautilus' browser window"
-msgstr ""
+msgstr "استخدم المزيد من نشاطات زر الفأرة في نافذة مستعرض Nautilus"
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:18
 msgid ""
 "For users with mice that have \"Forward\" and \"Back\" buttons, this key "
 "will determine if any action is taken inside of Nautilus when either is "
 "pressed."
-msgstr ""
+msgstr "للمستخدمين الذين لديهم فأرة لها الأزرار \"إلى الأمام\" و \"الخلف\" هذا المفتاح سيحدد فيما إذا تم اتخاذ أي إجراء داخل Nautilus إذا تم الضغط على أحدهما."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:19
 msgid "Mouse button to activate the \"Forward\" command in browser window"
-msgstr ""
+msgstr "زر الفأرة لتفعيل أمر \"إلى الأمام\" في نافذة المستعرض"
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:20
 msgid ""
 "For users with mice that have buttons for \"Forward\" and \"Back\", this key"
 " will set which button activates the \"Forward\" command in a browser "
 "window. Possible values range between 6 and 14."
-msgstr ""
+msgstr "للمستخدمين الذين لديهم فأرة لها الأزرار \"الأمام\" و \"الخلف\" هذا المفتاح سيحدد أي زر سيفعل أمر \"إلى الأمام\" في نافذة المستعرض. القيم المحتملة تقع بين 6 و 14."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:21
 msgid "Mouse button to activate the \"Back\" command in browser window"
-msgstr ""
+msgstr "زر الفأرة لتفعيل أمر \"الرجوع\" في نافذة المستعرض"
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:22
 msgid ""
 "For users with mice that have buttons for \"Forward\" and \"Back\", this key"
 " will set which button activates the \"Back\" command in a browser window. "
 "Possible values range between 6 and 14."
-msgstr ""
+msgstr "للمستخدمين الذين لديهم فأرة لها الأزرار \"الأمام\" و \"الخلف\" هذا المفتاح سيحدد أي زر سيفعل أمر \"الرجوع\" في نافذة المستعرض. القيم المحتملة تقع بين 6 و 14."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:23
 msgid "When to show thumbnails of files"
@@ -2216,7 +2216,7 @@ msgstr "فيما إذا ستعرض الملفات المخفية"
 msgid ""
 "This key is deprecated and ignored. The \"show-hidden\" key from "
 "\"org.gtk.Settings.FileChooser\" is now used instead."
-msgstr ""
+msgstr "تم إهمال هذا المفتاح وتجاهله. مفتاح \"الإظهار-الإخفاء\" من \"org.gtk.Settings.FileChooser\" مستخدم الآن بدلاً من ذلك."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:37
 msgid "Bulk rename utility"
@@ -2229,7 +2229,7 @@ msgid ""
 "themselves in this key by setting the key to a space-separated string of "
 "their executable name and any command line options. If the executable name "
 "is not set to a full path, it will be searched for in the search path."
-msgstr ""
+msgstr "إذا تم التعيين فإن Nautilus  سوف يلحق عناوين URL للملفات المختارة وسيعامل النتيجة كسطر أوامر لتغيير  أسماء مجموعة. تطبيقات تغيير الأسماء لمجموعات يمكنهم تسجيل أنفسهم في هذا المفتاح عن طريق ضبط المفتاح بسلسلة مفصولة بمسافة عن أسمائهم التنفيذية وأي خيارات سطر أوامر، وإذا لم يتم تعيين المسار الكامل للاسم التنفيذي فسيتم البحث عنه في مسار البحث. "
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:39
 msgid "List of possible captions on icons"
@@ -2314,7 +2314,7 @@ msgstr "استخدم المنظور الشجري"
 msgid ""
 "Whether a tree should be used for list view navigation instead of a flat "
 "list"
-msgstr ""
+msgstr "سواء كان يجب استخدام شجرة لعرض قائمة الملاحة بدلاً من قائمة مسطحة"
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:56
 msgid "Desktop font"
@@ -2414,13 +2414,13 @@ msgstr "إذا ضُبط كصحيح، فسيستخدم نوتلس تأثير ال
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:75
 msgid "The geometry string for a navigation window."
-msgstr ""
+msgstr "السلسلة الهندسية لنافذة الملاحة."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:76
 msgid ""
 "A string containing the saved geometry and coordinates string for navigation"
 " windows."
-msgstr ""
+msgstr "سلسلة تحتوي على سلسلة هندسية وإحداثيات لنوافذ الملاحة."
 
 #: ../libnautilus-private/org.gnome.nautilus.gschema.xml.in.h:77
 msgid "Whether the navigation window should be maximized."
@@ -2516,11 +2516,11 @@ msgstr "لا يمكن استخدام ‪--geometry‬ مع أكثر من مسا�
 
 #: ../src/nautilus-application.c:1114
 msgid "--select must be used with at least an URI."
-msgstr ""
+msgstr "الاختيار يجب أن يستخدم مع عنوان URL واحد على الأقل."
 
 #: ../src/nautilus-application.c:1120
 msgid "--no-desktop and --force-desktop cannot be used together."
-msgstr ""
+msgstr "الخيارات بدون سطح المكتب و فرض سطح المكتب لا يمكن استخدامهما معاً."
 
 #: ../src/nautilus-application.c:1219
 msgid "Perform a quick set of self-check tests."
@@ -2540,7 +2540,7 @@ msgstr "الأبعاد"
 
 #: ../src/nautilus-application.c:1229
 msgid "Always open a new window for browsing specified URIs"
-msgstr ""
+msgstr "فتح نافذة جديدة في المستعرض لتصفح عناوين URL محددة دائماً"
 
 #: ../src/nautilus-application.c:1231
 msgid "Only create windows for explicitly specified URIs."
@@ -2548,11 +2548,11 @@ msgstr "أنشئ نوافذ فقط للعناوين المحددة صراحة."
 
 #: ../src/nautilus-application.c:1233
 msgid "Never manage the desktop (ignore the GSettings preference)."
-msgstr ""
+msgstr "لا تقم بإدارة سطح المكتب أبداً (تجاهل تفضيلات GSettings )."
 
 #: ../src/nautilus-application.c:1235
 msgid "Always manage the desktop (ignore the GSettings preference)."
-msgstr ""
+msgstr "قم بإدارة سطح المكتب دائماً ( تجاهل تفضيلات GSettings )."
 
 #: ../src/nautilus-application.c:1237
 msgid "Quit Nautilus."
@@ -2560,7 +2560,7 @@ msgstr "أنهِ نوتلس."
 
 #: ../src/nautilus-application.c:1239
 msgid "Select specified URI in parent folder."
-msgstr ""
+msgstr "اختر عنوان URL محدد في المجلد الأساسي"
 
 #: ../src/nautilus-application.c:1240
 msgid "[URI...]"
@@ -2682,7 +2682,7 @@ msgstr "ال_مكان"
 
 #: ../src/nautilus-canvas-view.c:1154
 msgid "Sort"
-msgstr ""
+msgstr "ترتيب"
 
 #. name, stock id
 #. label, accelerator
@@ -4288,7 +4288,7 @@ msgstr "اختر برنامجا لفتح العنصر المختار به"
 #. label, accelerator
 #: ../src/nautilus-view.c:6935 ../src/nautilus-window-menus.c:580
 msgid "Information"
-msgstr ""
+msgstr "معلومات"
 
 #. tooltip
 #: ../src/nautilus-view.c:6936 ../src/nautilus-view.c:8591
@@ -4736,11 +4736,11 @@ msgstr "_نصوص شفرية"
 
 #: ../src/nautilus-view.c:7289
 msgid "Edit"
-msgstr ""
+msgstr "تحرير"
 
 #: ../src/nautilus-view.c:7289
 msgid "Undo Options"
-msgstr ""
+msgstr "التراجع عن الخيارات"
 
 #: ../src/nautilus-view.c:7641
 #, c-format
@@ -5051,7 +5051,7 @@ msgstr "فريق عربآيز للترجمة http://www.arabeyes.org:\nعرفا�
 #. name, stock id, label
 #: ../src/nautilus-window-menus.c:463
 msgid "Advanced"
-msgstr ""
+msgstr "متقدم"
 
 #. name, stock id
 #. label, accelerator
@@ -5277,7 +5277,7 @@ msgstr "أضِف علامة للمكان الحاليّ"
 #. name, stock id, label
 #: ../src/nautilus-window-menus.c:564
 msgid "Edit _Bookmarks…"
-msgstr ""
+msgstr "تحرير_العناوين..."
 
 #: ../src/nautilus-window-menus.c:565
 msgid "Display and edit bookmarks"
@@ -5344,11 +5344,11 @@ msgstr "اعرض العناصر في أيقونات"
 
 #: ../src/nautilus-window-menus.c:730
 msgid "Zoom"
-msgstr ""
+msgstr "التكبير"
 
 #: ../src/nautilus-window-menus.c:730
 msgid "Zoom Options"
-msgstr ""
+msgstr "خيارات التكبير"
 
 #: ../src/nautilus-window-menus.c:741
 msgid "_Up"
@@ -5402,7 +5402,7 @@ msgstr "تعذّر العثور على المكان المطلوب. رجاء ت�
 #: ../src/nautilus-window-slot.c:1789
 #, c-format
 msgid "Unhandled error message: %s"
-msgstr ""
+msgstr "رسالة خطأ غير متوقع: %s"
 
 #: ../src/nautilus-window-slot.c:2391
 msgid "Searching…"
@@ -5410,49 +5410,49 @@ msgstr "يبحث…"
 
 #: ../src/nautilus-window-slot.c:2628
 msgid "Copy"
-msgstr ""
+msgstr "نسخ "
 
 #: ../src/nautilus-window-slot.c:2630
 msgid "Move"
-msgstr ""
+msgstr "نقل"
 
 #: ../src/nautilus-window-slot.c:2632
 msgid "Open"
-msgstr ""
+msgstr "فتح"
 
 #: ../src/nautilus-window-slot.c:2767
 #, c-format
 msgid "%s and %'d item"
 msgid_plural "%s and %'d items"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "%s و %'d بنود"
+msgstr[1] "%s و %'d بنود"
+msgstr[2] "%s و %'d بنود"
+msgstr[3] "%s و %'d بنود"
+msgstr[4] "%s و %'d بنود"
+msgstr[5] "%s و %'d بنود"
 
 #: ../src/nautilus-window-slot.c:2773 ../src/nautilus-window-slot.c:2823
 #, c-format
 msgid "%'d item"
 msgid_plural "%'d items"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "%'d بنود"
+msgstr[1] "%'d بنود"
+msgstr[2] "%'d بنود"
+msgstr[3] "%'d بنود"
+msgstr[4] "%'d بنود"
+msgstr[5] "%'d بنود"
 
 #: ../src/nautilus-window-slot.c:2847
 msgid "Total Size:"
-msgstr ""
+msgstr "الحجم الكلي:"
 
 #: ../src/nautilus-window-slot.c:2857
 msgid "Date:"
-msgstr ""
+msgstr "التاريخ:"
 
 #: ../src/nautilus-window-slot.c:2887
 msgid "Add Folder"
-msgstr ""
+msgstr "إضافة مجلد"
 
 #: ../src/nautilus-x-content-bar.c:93
 msgid "Audio CD"
