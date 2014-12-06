@@ -250,7 +250,7 @@ AC_ARG_ENABLE(tracker,
 
 build_tracker=no
 if test "x$enable_tracker" != "xno"; then
-  PKG_CHECK_MODULES(TRACKER, tracker-sparql-0.16,
+  PKG_CHECK_MODULES(TRACKER, tracker-sparql-1.0,
                     [build_tracker=yes],
                     [build_tracker=no])
   if test "x$build_tracker" = "xyes"; then
