@@ -10,7 +10,6 @@ include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
 DEB_CONFIGURE_EXTRA_FLAGS += --libexecdir=/usr/lib/eos-file-manager \
                              --disable-update-mimedb \
                              --enable-introspection \
-                             --enable-tracker=no \
                              --enable-gtk-doc=yes
 LDFLAGS += -Wl,-z,defs -Wl,-O1 -Wl,--as-needed
 DEB_DH_MAKESHLIBS_ARGS_eos-file-manager += -Xusr/lib/eos-file-manager/extensions-3.0/
