@@ -98,7 +98,7 @@ nautilus_connect_server_dialog_response (GtkDialog *dialog,
 	case GTK_RESPONSE_HELP:
 		error = NULL;
 		gtk_show_uri (gtk_window_get_screen (GTK_WINDOW (dialog)),
-			      "help:gnome-help/nautilus-connect",
+			      "help:gnome-help/files",
 			      gtk_get_current_event_time (), &error);
 		if (error) {
 			eel_show_error_dialog (_("There was an error displaying help."), error->message,

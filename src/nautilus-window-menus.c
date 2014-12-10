@@ -232,7 +232,7 @@ action_nautilus_manual_callback (GtkAction *action,
 	} else if (g_str_equal (name,"NautilusHelpSort")) {
 		helpuri = "help:gnome-help/files-sort";
 	} else if (g_str_equal (name, "NautilusHelpLost")) {
-		helpuri = "help:gnome-help/files-lost";
+		helpuri = "help:gnome-help/files-recover";
 	} else if (g_str_equal (name, "NautilusHelpShare")) {
 		helpuri = "help:gnome-help/files-share";
 	} else {
