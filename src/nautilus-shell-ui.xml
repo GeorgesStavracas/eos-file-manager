@@ -60,7 +60,6 @@
     <menu action="Help">
       <menuitem action="NautilusHelp"/>
       <menuitem action="NautilusHelpSearch"/>
-      <menuitem action="NautilusHelpSort"/>
       <menuitem action="NautilusHelpLost"/>
       <menuitem action="NautilusHelpShare"/>
     </menu>
