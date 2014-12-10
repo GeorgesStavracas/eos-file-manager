@@ -229,10 +229,8 @@ action_nautilus_manual_callback (GtkAction *action,
 
 	if (g_str_equal (name, "NautilusHelpSearch")) {
 		helpuri = "help:gnome-help/files-search";
-	} else if (g_str_equal (name,"NautilusHelpSort")) {
-		helpuri = "help:gnome-help/files-sort";
 	} else if (g_str_equal (name, "NautilusHelpLost")) {
-		helpuri = "help:gnome-help/files-lost";
+		helpuri = "help:gnome-help/files-recover";
 	} else if (g_str_equal (name, "NautilusHelpShare")) {
 		helpuri = "help:gnome-help/files-share";
 	} else {
@@ -491,10 +489,6 @@ static const GtkActionEntry main_entries[] = {
   /* name, stock id */         { "NautilusHelpSearch", NULL,
   /* label, accelerator */       N_("Search for files"), NULL,
   /* tooltip */                  N_("Locate files based on file name and type. Save your searches for later use."),
-                                 G_CALLBACK (action_nautilus_manual_callback) },
-  /* name, stock id */         { "NautilusHelpSort", NULL,
-  /* label, accelerator */       N_("Sort files and folders"), NULL,
-  /* tooltip */                  N_("Arrange files by name, size, type, or when they were changed."),
                                  G_CALLBACK (action_nautilus_manual_callback) },
   /* name, stock id */         { "NautilusHelpLost", NULL,
   /* label, accelerator */       N_("Find a lost file"), NULL,
