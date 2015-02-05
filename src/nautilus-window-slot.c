@@ -2604,7 +2604,7 @@ preview_image_leave_notify_cb (GtkWidget *widget,
 	return FALSE;
 }
 
-static void
+static GtkWidget *
 pack_button (GtkWidget *container,
 	     GtkActionGroup *action_group,
 	     const gchar *action_name,
@@ -2619,6 +2619,8 @@ pack_button (GtkWidget *container,
 	gtk_activatable_set_related_action (GTK_ACTIVATABLE (button), action);
 
 	gtk_container_add (GTK_CONTAINER (container), button);
+
+	return button;
 }
 
 static void
@@ -2626,6 +2628,7 @@ update_action_box_for_selection (NautilusWindowSlot *slot,
 				 NautilusView *view)
 {
 	GtkActionGroup *action_group;
+	GtkWidget *open_button;
 
 	action_group = nautilus_view_get_action_group (view);
 
@@ -2633,8 +2636,10 @@ update_action_box_for_selection (NautilusWindowSlot *slot,
 		     NAUTILUS_ACTION_COPY_TO, _("Copy"));
 	pack_button (slot->details->action_box, action_group,
 		     NAUTILUS_ACTION_MOVE_TO, _("Move"));
-	pack_button (slot->details->action_box, action_group,
-		     NAUTILUS_ACTION_OPEN, _("Open"));
+	open_button = pack_button (slot->details->action_box, action_group,
+				   NAUTILUS_ACTION_OPEN, _("Open"));
+	gtk_style_context_add_class (gtk_widget_get_style_context (open_button),
+				     "suggested-action");
 
 	gtk_widget_show_all (slot->details->action_box);
 }
