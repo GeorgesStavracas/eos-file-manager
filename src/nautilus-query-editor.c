@@ -315,7 +315,12 @@ add_location_to_query (NautilusQueryEditor *editor,
 {
 	char *uri;
 
-	uri = nautilus_get_home_directory_uri ();
+	if (editor->details->current_uri != NULL) {
+		uri = g_strdup (editor->details->current_uri);
+	} else {
+		uri = nautilus_get_home_directory_uri ();
+	}
+
 	nautilus_query_set_location (query, uri);
 	g_free (uri);
 }
