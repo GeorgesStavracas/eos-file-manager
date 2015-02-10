@@ -1400,7 +1400,6 @@ pattern_select_response_cb (GtkWidget *dialog, int response, gpointer user_data)
 	NautilusDirectory *directory;
 	GtkWidget *entry;
 	GList *selection;
-	GError *error;
 
 	view = NAUTILUS_VIEW (user_data);
 
