@@ -464,14 +464,14 @@ nautilus_toolbar_constructed (GObject *obj)
 
 	/* Back */
 	tool_button = toolbar_create_toolbutton (self, FALSE, FALSE, NAUTILUS_ACTION_BACK, NULL);
-	gtk_action_set_icon_name (gtk_activatable_get_related_action (tool_button),
+	gtk_action_set_icon_name (gtk_activatable_get_related_action (GTK_ACTIVATABLE (tool_button)),
 				  rtl ? "go-previous-rtl-symbolic" : "go-previous-symbolic");
 	navigation_button_setup_menu (self, tool_button, NAUTILUS_NAVIGATION_DIRECTION_BACK);
 	gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (tool_button));
 
 	/* Forward */
 	tool_button = toolbar_create_toolbutton (self, FALSE, FALSE, NAUTILUS_ACTION_FORWARD, NULL);
-	gtk_action_set_icon_name (gtk_activatable_get_related_action (tool_button),
+	gtk_action_set_icon_name (gtk_activatable_get_related_action (GTK_ACTIVATABLE (tool_button)),
 				  rtl ? "go-next-rtl-symbolic" : "go-next-symbolic");
 	navigation_button_setup_menu (self, tool_button, NAUTILUS_NAVIGATION_DIRECTION_FORWARD);
 	gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (tool_button));
