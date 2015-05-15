@@ -90,20 +90,6 @@ toolbar_update_appearance (NautilusToolbar *self)
 	}
 }
 
-static gint
-get_icon_margin (NautilusToolbar *self)
-{
-	GtkIconSize toolbar_size;
-	gint toolbar_size_px, menu_size_px;
-
-	toolbar_size = gtk_toolbar_get_icon_size (GTK_TOOLBAR (self->priv->toolbar));
-
-	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &menu_size_px, NULL);
-	gtk_icon_size_lookup (toolbar_size, &toolbar_size_px, NULL);
-
-	return (gint) floor ((toolbar_size_px - menu_size_px) / 2.0);
-}
-
 static GtkWidget *
 toolbar_create_toolbutton (NautilusToolbar *self,
 			   gboolean create_menu,
@@ -126,8 +112,6 @@ toolbar_create_toolbutton (NautilusToolbar *self,
 	}
 
 	image = gtk_image_new ();
-	g_object_set (image, "margin", get_icon_margin (self), NULL);
-
 	gtk_button_set_image (GTK_BUTTON (button), image);
 
 	if (create_menu) {
@@ -422,7 +406,6 @@ nautilus_toolbar_constructed (GObject *obj)
 {
 	NautilusToolbar *self = NAUTILUS_TOOLBAR (obj);
 	GtkWidget *hbox, *toolbar;
-	GtkStyleContext *context;
 	GtkWidget *tool_button;
 	GtkWidget *menu;
 	GtkWidget *box;
@@ -448,11 +431,6 @@ nautilus_toolbar_constructed (GObject *obj)
 
 	gtk_box_pack_start (GTK_BOX (self), self->priv->toolbar, TRUE, TRUE, 0);
 	gtk_widget_show_all (self->priv->toolbar);
-
-	context = gtk_widget_get_style_context (toolbar);
-	/* Set the MENUBAR style class so it's possible to drag the app
-	 * using the toolbar. */
-	gtk_style_context_add_class (context, GTK_STYLE_CLASS_MENUBAR);
 
 	horizontal_size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 

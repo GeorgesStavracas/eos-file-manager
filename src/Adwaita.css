@@ -62,19 +62,6 @@ NautilusNotebook .frame {
     border-width: 1px 0 0 0;
 }
 
-NautilusToolbar .button {
-    icon-shadow: 0 1px @button_text_shadow;
-}
-
-NautilusToolbar .button:active {
-    icon-shadow: 0 1px @button_active_text_shadow;
-}
-
-NautilusToolbar .button:insensitive,
-NautilusToolbar .button:active *:insensitive {
-    icon-shadow: none;
-}
-
 NautilusQueryEditor .primary-toolbar.toolbar {
     border-bottom-width: 0;
 }
