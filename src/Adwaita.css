@@ -1,0 +1,109 @@
+.nautilus-canvas-item {
+    border-radius: 5px;
+}
+
+.nautilus-desktop.nautilus-canvas-item {
+    color: @theme_selected_fg_color;
+    text-shadow: 1px 1px black;
+}
+
+.nautilus-desktop.nautilus-canvas-item:active {
+    color: @theme_text_color;
+}
+
+.nautilus-desktop.nautilus-canvas-item:selected {
+    color: @theme_selected_fg_color;
+}
+
+.nautilus-desktop.nautilus-canvas-item:active,
+.nautilus-desktop.nautilus-canvas-item:prelight,
+.nautilus-desktop.nautilus-canvas-item:selected {
+    text-shadow: none;
+}
+
+.nautilus-desktop.nautilus-canvas-item:selected:backdrop {
+    color: @theme_unfocused_selected_fg_color;
+}
+
+NautilusWindow .sidebar .frame {
+    border-width: 1px 0 0 0;
+    border-style: solid;
+    border-color: @borders;
+    border-radius: 0;
+}
+
+NautilusWindow .sidebar .frame:backdrop {
+    border-color: @unfocused_borders;
+}
+
+NautilusWindow > GtkGrid > .pane-separator,
+NautilusWindow > GtkGrid > .pane-separator:hover {
+    border-width: 1px 1px 0 0;
+    border-style: solid;
+    border-color: @borders;
+    background-color: @sidebar_bg;
+    color: shade (@theme_bg_color, 0.9);
+}
+
+NautilusWindow > GtkGrid > .pane-separator:backdrop,
+NautilusWindow > GtkGrid > .pane-separator:hover:backdrop {
+    border-color: @unfocused_borders;
+    background-color: @sidebar_bg_unfocused;
+}
+
+NautilusView.frame {
+    border-right-width: 0;
+    border-left-width: 0;
+    border-bottom-width: 0;
+}
+
+NautilusNotebook .frame {
+    border-width: 1px 0 0 0;
+}
+
+NautilusQueryEditor .primary-toolbar.toolbar {
+    border-bottom-width: 0;
+}
+
+NautilusQueryEditor .toolbar {
+    padding-top: 3px;
+    padding-bottom: 2px;
+
+    border-width: 1px 0 0 0;
+    border-style: solid;
+    border-color: @theme_bg_color;
+    
+    background-color: mix(@theme_bg_color, @theme_base_color, 0.5);
+}
+
+NautilusQueryEditor .toolbar:nth-child(2) {
+    border-color: @borders;
+}
+
+NautilusQueryEditor .toolbar:backdrop {
+    background-color: @theme_unfocused_base_color;
+    border-color: @theme_unfocused_base_color;
+}
+
+NautilusQueryEditor .toolbar:backdrop:nth-child(2) {
+    border-color: @unfocused_borders;
+}
+
+
+NautilusNotebook.notebook NautilusQueryEditor .primary-toolbar.toolbar {
+    border-top-width: 0;
+}
+
+NautilusNotebook.notebook NautilusQueryEditor .toolbar:last-child,
+NautilusNotebook.notebook NautilusQueryEditor .primary-toolbar.toolbar:only-child {
+    border-bottom-width: 1px;
+    border-bottom-color: @borders;
+}
+
+.nautilus-preview-image {
+    background-color: @theme_bg_color;
+    border-radius: 4px;
+    border-color: @borders;
+    border-style: solid;
+    border-width: 1px;
+}
