@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-file-manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-12 01:45+0000\n"
+"POT-Creation-Date: 2015-05-19 01:40+0000\n"
 "PO-Revision-Date: 2014-12-13 00:14+0000\n"
 "Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/projects/p/eos-file-manager/language/es/)\n"
@@ -3960,7 +3960,7 @@ msgid "Executable files in this folder will appear in the Scripts menu."
 msgstr "Todos los archivos ejecutables en esta carpeta aparecerán en el menú «Scripts»."
 
 #. Action Menu
-#: ../src/nautilus-toolbar.c:523
+#: ../src/nautilus-toolbar.c:501
 msgid "Location options"
 msgstr "Opciones de la ubicación"
 
