@@ -15,7 +15,7 @@
 # Guilherme de S. Pastore <gpastore@gnome.org>, 2006
 # Jonh Wendell <jwendell@gnome.org>, 2009,2012
 # Krix Apolinário <krixapolinario@gmail.com>, 2009
-# Rafael Ferreira <rafael.f.f1@gmail.com>, 2012
+# Rafael Fontenelle <rffontenelle@gmail.com>, 2012
 # Renato Peixoto Pinto <renato@endlessm.com>, 2013
 # Ricardo Pitanga <pitanga@endlessm.com>, 2013
 # Roddy Shuler <roddy@endlessm.com>, 2013
@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-file-manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-16 01:40+0000\n"
+"POT-Creation-Date: 2015-06-23 01:39+0000\n"
 "PO-Revision-Date: 2015-05-19 22:41+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/eos-file-manager/language/pt_BR/)\n"
