@@ -56,7 +56,7 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/ChangeLog \
 	`find "$(srcdir)" -type f -name Makefile.in -print`
 
-DISTCHECK_CONFIGURE_FLAGS = --disable-update-mimedb --enable-gtk-doc
+AM_DISTCHECK_CONFIGURE_FLAGS = --disable-update-mimedb --enable-gtk-doc
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
