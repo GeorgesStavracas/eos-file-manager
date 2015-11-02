@@ -10,18 +10,20 @@
 # Eddy Alegria <eddy@endlessm.com>, 2014
 # Francisco Javier F. Serrador <serrador@cvs.gnome.org>, 2004-2006
 # Ismael Olea <ismael@olea.org>, 2001
+# Joel Gil Leon <joel@endlessm.com>, 2015
 # Jorge Carrasquilla Soares <jorge@conectiva.com.br>, 2000
 # Jorge González <jorgegonz@svn.gnome.org>, 2007-2008,2010-2012
 # Juanje Ojeda Croissier <jojeda@emergya.es>, 2009
 # Nuritzi Sanchez <ns@endlessm.com>, 2013
 # Nuritzi Sanchez <ns@endlessm.com>, 2013
+# Roddy Shuler <roddy@endlessm.com>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: eos-file-manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-20 01:41+0000\n"
-"PO-Revision-Date: 2014-12-13 00:14+0000\n"
-"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
+"POT-Creation-Date: 2015-10-27 01:42+0000\n"
+"PO-Revision-Date: 2015-11-02 23:08+0000\n"
+"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/endless-mobile-inc/eos-file-manager/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4160,7 +4162,7 @@ msgstr "Abrir cada elemento seleccionado en una pestaña nueva"
 #. label, accelerator
 #: ../src/nautilus-view.c:6960
 msgid "Other _Application…"
-msgstr "Otro_probrama…"
+msgstr "Otro _programa…"
 
 #. tooltip
 #: ../src/nautilus-view.c:6961 ../src/nautilus-view.c:6965
