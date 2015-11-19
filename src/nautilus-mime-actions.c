@@ -1295,15 +1295,18 @@ search_for_application_dbus_call_notify_cb (GDBusProxy   *proxy,
 	if (variant == NULL) {
 		if (!g_dbus_error_is_remote_error (error) ||
 		    g_strcmp0 (g_dbus_error_get_remote_error (error), "org.freedesktop.PackageKit.Modify.Failed") == 0) {
-			    char *message;
+			char *message;
 
-			    message = g_strdup_printf ("%s\n%s",
-						       _("There was an internal error trying to search for applications:"),
-						       error->message);
-			    eel_show_error_dialog (_("Unable to search for application"), message,
-			                           parameters_install->parent_window);
-			    g_free (message);
-		    }
+			message = g_strdup_printf ("%s\n%s",
+						   _("There was an internal error trying to search for applications:"),
+						   error->message);
+			eel_show_error_dialog (_("Unable to search for application"), message,
+					       parameters_install->parent_window);
+			g_free (message);
+		} else {
+			g_warning ("Error while trying to search for applications: %s",
+				   error->message);
+		}
 
 		g_error_free (error);
 		activate_parameters_install_free (parameters_install);
@@ -1389,26 +1392,27 @@ pk_proxy_appeared_cb (GObject *source,
 		      gpointer user_data)
 {
         ActivateParametersInstall *parameters_install = user_data;
-	char *mime_type;
+	char *mime_type, *name_owner;
 	char *error_message;
 	GtkWidget *dialog;
         GDBusProxy *proxy;
 	GError *error = NULL;
 
 	proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	name_owner = g_dbus_proxy_get_name_owner (proxy);
 
-	if (error != NULL) {
+	if (error != NULL || name_owner == NULL) {
 		g_warning ("Couldn't call Modify on the PackageKit interface: %s",
-			   error->message);
-		g_error_free (error);
+			   error != NULL ? error->message : "no owner for PackageKit");
+		g_clear_error (&error);
 
 		/* show an unhelpful dialog */
 		show_unhandled_type_error (parameters_install);
-		/* The callback wasn't started, so we have to free the parameters */
-		activate_parameters_install_free (parameters_install);
 
 		return;
 	}
+
+	g_free (name_owner);
 
 	mime_type = nautilus_file_get_mime_type (parameters_install->file);
 	error_message = get_application_no_mime_type_handler_message (parameters_install->file,
