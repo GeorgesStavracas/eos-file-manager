@@ -988,7 +988,10 @@ over_eject_button (SidebarTreeData *data,
 		/* This is kinda weird, but we have to do it to workaround gtk+ expanding
 		 * the eject cell renderer (even thought we told it not to) and we then
 		 * had to set it right-aligned */
-		x_offset += width - hseparator - EJECT_BUTTON_XPAD - eject_button_size;
+		if (gtk_widget_get_direction (GTK_WIDGET (tree_view)) == GTK_TEXT_DIR_LTR)
+			x_offset += width - hseparator - EJECT_BUTTON_XPAD - eject_button_size;
+		else
+			x_offset += EJECT_BUTTON_XPAD;
 
 		if (x - x_offset >= 0 &&
 		    x - x_offset <= eject_button_size) {
